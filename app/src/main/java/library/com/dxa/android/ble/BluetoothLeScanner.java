@@ -14,7 +14,7 @@ public final class BluetoothLeScanner {
     private static final long HOUR = 60 * MINUTE;
 
     private final Handler handler = new Handler();
-    private volatile BLeScanListener listener;
+    private volatile Listener listener;
     private volatile boolean scanning = false;
 
     private final BluetoothAdapter.LeScanCallback leScanCallback =
@@ -43,11 +43,11 @@ public final class BluetoothLeScanner {
     public BluetoothLeScanner() {
     }
 
-    public BluetoothLeScanner(BLeScanListener listener) {
+    public BluetoothLeScanner(Listener listener) {
         this.listener = listener;
     }
 
-    public void setBLeScanListener(BLeScanListener listener) {
+    public void setBLeScanListener(Listener listener) {
         this.listener = listener;
     }
 
@@ -148,7 +148,7 @@ public final class BluetoothLeScanner {
     /**
      * 扫描监听
      */
-    public interface BLeScanListener {
+    public interface Listener {
         /**
          * 开始扫描
          */

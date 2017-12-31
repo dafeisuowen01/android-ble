@@ -70,7 +70,7 @@ public final class LoggerManager implements DLogger {
         logger.e(messages);
     }
 
-    private static class Holder {
+    private static final class Holder {
 
         private static volatile LoggerManager INSTANCE;
 

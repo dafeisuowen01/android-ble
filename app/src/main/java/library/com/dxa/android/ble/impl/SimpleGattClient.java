@@ -194,8 +194,8 @@ public class SimpleGattClient implements BluetoothGattClient {
     }
 
     @Override
-    public void setDisconnectWhenNoService(boolean disconnect) {
-        mCallback.setOnNotFoundService(disconnect);
+    public void disconnectWhenNotFoundService(boolean disconnect) {
+        mCallback.disconnectWhenNotFoundService(disconnect);
     }
 
     private static String getDeviceAddress(BluetoothDevice device) {

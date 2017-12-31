@@ -33,7 +33,7 @@ public interface BluetoothGattClient extends GattOperator {
      *
      * @param context     上下文对象
      * @param address     设备的MAC地址
-     * @param autoConnect 是否自动重连，设备休眠或超过距离断开后，当设备可以重新连接时，系统会自动重新连接
+     * @param autoConnect 是否自动重连，当设备休眠或超过距离断开后，系统会自动重新连接
      * @return 是否连接
      */
     boolean connect(Context context, String address, boolean autoConnect);
@@ -51,7 +51,7 @@ public interface BluetoothGattClient extends GattOperator {
     /**
      * 重新连接，如果之前连接过设备
      *
-     * @return 是否重新连接
+     * @return 是否重新连接(没有连接过设备调用会返回false)
      */
     boolean reconnect();
 
@@ -99,6 +99,6 @@ public interface BluetoothGattClient extends GattOperator {
     /**
      * 设置没有服务时是否主动断开，默认断开
      */
-    void setDisconnectWhenNoService(boolean disconnect);
+    void disconnectWhenNotFoundService(boolean disconnect);
 
 }

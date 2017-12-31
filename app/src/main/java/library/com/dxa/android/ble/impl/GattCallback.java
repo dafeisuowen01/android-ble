@@ -15,7 +15,7 @@ import com.dxa.android.ble.log.LoggerManager;
 /**
  * 默认的BluetoothGattCallback类
  */
-public class GattCallback extends BluetoothGattCallback {
+public final class GattCallback extends BluetoothGattCallback {
 
     private final LoggerManager logger = LoggerManager.getInstance();
     /**
@@ -313,7 +313,7 @@ public class GattCallback extends BluetoothGattCallback {
     /**
      * 当找不到服务时是否断开
      */
-    public void setOnNotFoundService(boolean disconnect) {
+    public void disconnectWhenNotFoundService(boolean disconnect) {
         this.disconnectNotFoundService = disconnect;
     }
 }

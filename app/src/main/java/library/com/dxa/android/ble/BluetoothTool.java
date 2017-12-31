@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 蓝牙4.0的工具类
@@ -75,7 +76,7 @@ public class BluetoothTool {
         }
 
         String hex = lowerCase ? HEX_LOWER_CASE : HEX_UPPER_CASE;
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder(bin.length * 2);
         for (byte b : bin) {
             //字节高4位
             builder.append(hex.charAt((b & 0xF0) >> 4));
@@ -123,6 +124,12 @@ public class BluetoothTool {
         return (byte) "0123456789ABCDEF".indexOf(c);
     }
 
+    /**
+     * 将字节数组转化成10进制整数
+     *
+     * @param bytes 长度为2的字节数组
+     * @return 返回一个转换后的10进制整数
+     */
     public static int byteToInt(byte[] bytes) {
         int value = bytes[0] & 0xFF;
         int temp = bytes[1];
@@ -137,104 +144,110 @@ public class BluetoothTool {
         /**
          * GATT 服务
          */
-        SERVICE {
-            private HashMap<Integer, String> serviceTypes = new HashMap<>();
-
-            {
-                serviceTypes.put(BluetoothGattService.SERVICE_TYPE_PRIMARY, "PRIMARY");
-                serviceTypes.put(BluetoothGattService.SERVICE_TYPE_SECONDARY, "SECONDARY");
-            }
-
-            public String getServiceType(int type) {
-                return serviceTypes.get(type);
-            }
-        },
+        SERVICE,
 
         /**
          * GattCharacteristic的属性和权限
          */
-        CHARACTERISTIC {
-            private HashMap<Integer, String> permissions = new HashMap<>();
-            private HashMap<Integer, String> properties = new HashMap<>();
-
-            {
-                properties.put(BluetoothGattCharacteristic.PROPERTY_BROADCAST, "BROADCAST");
-                properties.put(BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS, "EXTENDED_PROPS");
-                properties.put(BluetoothGattCharacteristic.PROPERTY_INDICATE, "INDICATE");
-                properties.put(BluetoothGattCharacteristic.PROPERTY_NOTIFY, "NOTIFY");
-                properties.put(BluetoothGattCharacteristic.PROPERTY_READ, "READ");
-                properties.put(BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE, "SIGNED_WRITE");
-                properties.put(BluetoothGattCharacteristic.PROPERTY_WRITE, "WRITE");
-                properties.put(BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE, "WRITE_NO_RESPONSE");
-
-                permissions.put(0, UNKNOWN);
-                permissions.put(BluetoothGattCharacteristic.PERMISSION_READ, "READ");
-                permissions.put(BluetoothGattCharacteristic.PERMISSION_READ_ENCRYPTED, "READ_ENCRYPTED");
-                permissions.put(BluetoothGattCharacteristic.PERMISSION_READ_ENCRYPTED_MITM, "READ_ENCRYPTED_MITM");
-                permissions.put(BluetoothGattCharacteristic.PERMISSION_WRITE, "WRITE");
-                permissions.put(BluetoothGattCharacteristic.PERMISSION_WRITE_ENCRYPTED, "WRITE_ENCRYPTED");
-                permissions.put(BluetoothGattCharacteristic.PERMISSION_WRITE_ENCRYPTED_MITM, "WRITE_ENCRYPTED_MITM");
-                permissions.put(BluetoothGattCharacteristic.PERMISSION_WRITE_SIGNED, "WRITE_SIGNED");
-                permissions.put(BluetoothGattCharacteristic.PERMISSION_WRITE_SIGNED_MITM, "WRITE_SIGNED_MITM");
-            }
-
-            public String getProperty(int property) {
-                return getHashMapValue(properties, property);
-            }
-
-            /**
-             * 获取权限
-             */
-            public String getPermission(int permission) {
-                return getHashMapValue(permissions, permission);
-            }
-
-        },
+        CHARACTERISTIC,
 
         /**
          * GattDescriptor的权限
          */
-        DESCRIPTOR {
-            private HashMap<Integer, String> permissions = new HashMap<>();
-            private HashMap<byte[], String> valueTypes = new HashMap<>();
+        DESCRIPTOR;
 
-            {
-                permissions.put(0, UNKNOWN);
-                permissions.put(BluetoothGattDescriptor.PERMISSION_READ, "READ");
-                permissions.put(BluetoothGattDescriptor.PERMISSION_READ_ENCRYPTED, "READ_ENCRYPTED");
-                permissions.put(BluetoothGattDescriptor.PERMISSION_READ_ENCRYPTED_MITM, "READ_ENCRYPTED_MITM");
-                permissions.put(BluetoothGattDescriptor.PERMISSION_WRITE, "WRITE");
-                permissions.put(BluetoothGattDescriptor.PERMISSION_WRITE_ENCRYPTED, "WRITE_ENCRYPTED");
-                permissions.put(BluetoothGattDescriptor.PERMISSION_WRITE_ENCRYPTED_MITM, "WRITE_ENCRYPTED_MITM");
-                permissions.put(BluetoothGattDescriptor.PERMISSION_WRITE_SIGNED, "WRITE_SIGNED");
-                permissions.put(BluetoothGattDescriptor.PERMISSION_WRITE_SIGNED_MITM, "WRITE_SIGNED_MITM");
+        /********************************************************************************/
 
-                valueTypes.put(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, "ENABLE_NOTIFICATION_VALUE");
-                valueTypes.put(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE, "DISABLE_NOTIFICATION_VALUE");
-                valueTypes.put(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE, "ENABLE_INDICATION_VALUE");
+        private HashMap<Integer, String> serviceTypes = new HashMap<>();
+
+        {
+            serviceTypes.put(BluetoothGattService.SERVICE_TYPE_PRIMARY, "PRIMARY");
+            serviceTypes.put(BluetoothGattService.SERVICE_TYPE_SECONDARY, "SECONDARY");
+        }
+
+        public String getServiceType(int type) {
+            return serviceTypes.get(type);
+        }
+
+        /********************************************************************************/
+
+        private HashMap<Integer, String> charPermissions = new HashMap<>();
+        private HashMap<Integer, String> charProperties = new HashMap<>();
+
+        {
+            charProperties.put(BluetoothGattCharacteristic.PROPERTY_BROADCAST, "BROADCAST");
+            charProperties.put(BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS, "EXTENDED_PROPS");
+            charProperties.put(BluetoothGattCharacteristic.PROPERTY_INDICATE, "INDICATE");
+            charProperties.put(BluetoothGattCharacteristic.PROPERTY_NOTIFY, "NOTIFY");
+            charProperties.put(BluetoothGattCharacteristic.PROPERTY_READ, "READ");
+            charProperties.put(BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE, "SIGNED_WRITE");
+            charProperties.put(BluetoothGattCharacteristic.PROPERTY_WRITE, "WRITE");
+            charProperties.put(BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE, "WRITE_NO_RESPONSE");
+
+            charPermissions.put(0, UNKNOWN);
+            charPermissions.put(BluetoothGattCharacteristic.PERMISSION_READ, "READ");
+            charPermissions.put(BluetoothGattCharacteristic.PERMISSION_READ_ENCRYPTED, "READ_ENCRYPTED");
+            charPermissions.put(BluetoothGattCharacteristic.PERMISSION_READ_ENCRYPTED_MITM, "READ_ENCRYPTED_MITM");
+            charPermissions.put(BluetoothGattCharacteristic.PERMISSION_WRITE, "WRITE");
+            charPermissions.put(BluetoothGattCharacteristic.PERMISSION_WRITE_ENCRYPTED, "WRITE_ENCRYPTED");
+            charPermissions.put(BluetoothGattCharacteristic.PERMISSION_WRITE_ENCRYPTED_MITM, "WRITE_ENCRYPTED_MITM");
+            charPermissions.put(BluetoothGattCharacteristic.PERMISSION_WRITE_SIGNED, "WRITE_SIGNED");
+            charPermissions.put(BluetoothGattCharacteristic.PERMISSION_WRITE_SIGNED_MITM, "WRITE_SIGNED_MITM");
+        }
+
+        public String getCharactristicProperty(int property) {
+            return getHashMapValue(charProperties, property);
+        }
+
+        /**
+         * 获取权限
+         */
+        public String getCharactristicPermission(int permission) {
+            return getHashMapValue(charPermissions, permission);
+        }
+
+        /********************************************************************************/
+
+        private HashMap<Integer, String> descriptorPermissions = new HashMap<>();
+        private HashMap<byte[], String> descriptorValueTypes = new HashMap<>();
+
+        {
+            descriptorPermissions.put(0, UNKNOWN);
+            descriptorPermissions.put(BluetoothGattDescriptor.PERMISSION_READ, "READ");
+            descriptorPermissions.put(BluetoothGattDescriptor.PERMISSION_READ_ENCRYPTED, "READ_ENCRYPTED");
+            descriptorPermissions.put(BluetoothGattDescriptor.PERMISSION_READ_ENCRYPTED_MITM, "READ_ENCRYPTED_MITM");
+            descriptorPermissions.put(BluetoothGattDescriptor.PERMISSION_WRITE, "WRITE");
+            descriptorPermissions.put(BluetoothGattDescriptor.PERMISSION_WRITE_ENCRYPTED, "WRITE_ENCRYPTED");
+            descriptorPermissions.put(BluetoothGattDescriptor.PERMISSION_WRITE_ENCRYPTED_MITM, "WRITE_ENCRYPTED_MITM");
+            descriptorPermissions.put(BluetoothGattDescriptor.PERMISSION_WRITE_SIGNED, "WRITE_SIGNED");
+            descriptorPermissions.put(BluetoothGattDescriptor.PERMISSION_WRITE_SIGNED_MITM, "WRITE_SIGNED_MITM");
+
+            descriptorValueTypes.put(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, "ENABLE_NOTIFICATION_VALUE");
+            descriptorValueTypes.put(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE, "DISABLE_NOTIFICATION_VALUE");
+            descriptorValueTypes.put(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE, "ENABLE_INDICATION_VALUE");
+        }
+
+        /**
+         * 获取权限
+         *
+         * @param permission 权限
+         * @return 权限
+         */
+        public String getDescriptorPermission(int permission) {
+            return getHashMapValue(descriptorPermissions, permission);
+        }
+
+        /**
+         * 获取值的类型
+         */
+        public String getDescriptorValueType(byte[] value) {
+            String type = descriptorValueTypes.get(value);
+            if (isEmpty(type) && notEmpty(value)) {
+                byte[] temp = {value[0], value[1]};
+                type = descriptorValueTypes.get(temp);
             }
-
-            /**
-             * 获取权限
-             * @param permission 权限
-             * @return 权限
-             */
-            public String getPermission(int permission) {
-                return getHashMapValue(permissions, permission);
-            }
-
-            /**
-             * 获取值的类型
-             */
-            public String getValueType(byte[] value) {
-                String type = valueTypes.get(value);
-                if (isEmpty(type) && notEmpty(value)) {
-                    byte[] temp = {value[0], value[1]};
-                    type = valueTypes.get(temp);
-                }
-                return isEmpty(type) ? UNKNOWN : type;
-            }
-        };
+            return isEmpty(type) ? UNKNOWN : type;
+        }
 
         private static String getHashMapValue(HashMap<Integer, String> hashMap, int number) {
             String result = hashMap.get(number);
@@ -260,6 +273,7 @@ public class BluetoothTool {
             }
             return result;
         }
+
     }
 
     /*****************************************************************************/
@@ -391,17 +405,26 @@ public class BluetoothTool {
             BluetoothGatt gatt, UUID serviceUUID, UUID characteristicUUID) {
         BluetoothGattService service = gatt.getService(serviceUUID);
         if (service != null) {
-            BluetoothGattCharacteristic c = service.getCharacteristic(characteristicUUID);
-            if (c != null) {
-                gatt.setCharacteristicNotification(c, true);
-                // 适配部分机型(注意：华为手机在加上这句话之后，得不到数据，先注释)
-//                gatt.readCharacteristic(c);
-                for (BluetoothGattDescriptor descriptor : c.getDescriptors()) {
-                    BluetoothTool.writeDescriptorValue(
-                            gatt, descriptor, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                }
-                return true;
+            BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUUID);
+            return notification(gatt, service, characteristic);
+        }
+        return false;
+    }
+
+    /**
+     * 设置提醒
+     */
+    public static boolean notification(
+            BluetoothGatt gatt, BluetoothGattService service, BluetoothGattCharacteristic characteristic) {
+        if (nonNull(gatt, service, characteristic)) {
+            gatt.setCharacteristicNotification(characteristic, true);
+            // 适配部分机型(会导致部分手机无法接收到数据)
+            // gatt.readCharacteristic(characteristic);
+            for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
+                BluetoothTool.writeDescriptorValue(
+                        gatt, descriptor, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             }
+            return true;
         }
         return false;
     }

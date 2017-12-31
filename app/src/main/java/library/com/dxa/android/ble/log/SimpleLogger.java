@@ -18,8 +18,8 @@ public class SimpleLogger implements DLogger{
     }
 
     private String append(Object... args) {
+        String message = "";
         if (ready) {
-            String message;
             synchronized (buffer) {
                 buffer.setLength(0);
                 for (Object o : args) {
@@ -27,9 +27,8 @@ public class SimpleLogger implements DLogger{
                 }
                 message = buffer.toString();
             }
-            return message;
         }
-        return "";
+        return message;
     }
 
     @Override
