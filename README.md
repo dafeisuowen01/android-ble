@@ -8,9 +8,9 @@
  - 断开连接
  - 当前连接的设备
  - 是否已连接/发现服务
- - ...等操作
+ - 等...操作
  
- 提供了默认的实现类SimpleGattClient，可直接创建SimpleGattClient对象来管理蓝牙4.0设备的连接状态；
+ 提供了默认的实现类SimpleGattClient，可直接创建SimpleGattClient对象来管理蓝牙4.0设备的连接和状态的监听、数据的传输；
  
  提供了OnGattChangedListener接口，监听连接的状态，如连接成功、连接断开、发现服务、接收到数据等；有默认实现DefaultGattChangedListener，如不想实现全部的OnGattChangedListener方法，可直接继承自DefaultGattChangedListener；
 
