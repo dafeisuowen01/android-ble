@@ -1,0 +1,7 @@
+apply plugin: 'com.android.library'
+
+// 引入公共依赖
+apply from: "${rootProject.getProjectDir()}/buildSystem/AndroidConfig.gradle"
+
+// 将代码打成jar包
+apply from: "${rootProject.getProjectDir()}/buildSystem/make-jar.gradle"

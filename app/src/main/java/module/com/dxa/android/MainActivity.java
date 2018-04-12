@@ -49,6 +49,8 @@ public class MainActivity extends AppCompatActivity
     private BluetoothLeScanner scanner;
     private BluetoothGattClient client;
 
+    private AlertDialog requestPermissionDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,24 +85,27 @@ public class MainActivity extends AppCompatActivity
 
         if (!hasLocationAndBluetoothPermissions()) {
             // 做的比较简陋，需要更完善的权限请求逻辑
-            new AlertDialog.Builder(this)
-                    .setCancelable(false)
-                    .setMessage("蓝牙扫描需要权限，请允许，谢谢!")
-                    .setNegativeButton("不给", (dialog, which) -> {
-                        dialog.dismiss();
-                        getActivity().finish();
-                    })
-                    .setPositiveButton("朕,准了", (dialog, which) -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            requestPermissions(new String[]{
-                                    Manifest.permission.BLUETOOTH,
-                                    Manifest.permission.BLUETOOTH_ADMIN,
-                                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                                    Manifest.permission.ACCESS_FINE_LOCATION
-                            }, 666);
-                        }
-                    })
-                    .show();
+            if (requestPermissionDialog == null) {
+                requestPermissionDialog = new AlertDialog.Builder(this)
+                        .setCancelable(false)
+                        .setMessage("蓝牙扫描需要权限，请允许，谢谢!")
+                        .setNegativeButton("不给", (dialog, which) -> {
+                            dialog.dismiss();
+                            getActivity().finish();
+                        })
+                        .setPositiveButton("朕,准了", (dialog, which) -> {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                requestPermissions(new String[]{
+                                        Manifest.permission.BLUETOOTH,
+                                        Manifest.permission.BLUETOOTH_ADMIN,
+                                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                                        Manifest.permission.ACCESS_FINE_LOCATION
+                                }, 666);
+                            }
+                        })
+                        .create();
+            }
+            requestPermissionDialog.show();
         }
 
         // 可以替换成自己的日志实现
@@ -111,16 +116,18 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (requestPermissionDialog != null) {
+            requestPermissionDialog.dismiss();
+        }
         handler.getLooper().quitSafely();
     }
 
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//
-//        // Forward results to EasyPermissions
-//        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
-//    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // Forward results to EasyPermissions
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
 
     private Activity getActivity() {
         return this;
@@ -135,8 +142,10 @@ public class MainActivity extends AppCompatActivity
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_scan:
-                // 扫描10秒,建议在子线程扫描，并且扫描之前应该先检查权限（这里我偷个懒）
-                scanner.startScan(10 * 1000);
+                // 清空之前扫描到的设备
+                adapter.clear();
+                // 扫描20秒,建议在子线程扫描，并且扫描之前应该先检查权限（这里我偷个懒）
+                scanner.startScan(20 * 1000);
                 break;
             case R.id.btn_stop_scan:
                 scanner.stopScan();
@@ -215,7 +224,9 @@ public class MainActivity extends AppCompatActivity
          */
         @Override
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+            // 主线程更新，防止部分手机添加没有更新UI
             runOnUiThread(() -> adapter.add(device));
+            Log.i("TAG", String.format("扫描到设备: %s ==>: %s", device.getName(), device.getAddress()));
         }
 
         /**
@@ -272,16 +283,18 @@ public class MainActivity extends AppCompatActivity
 
             Log.i("TAG", "查找到服务(BluetoothGattService)和特征(BluetoothGattCharacteristic)");
 
+            BluetoothTool.printGattInfo(gatt.getServices(), "蓝牙服务@TAG");
+
             // 设置数据改变时提醒
 //            handler.sendEmptyMessage(WHAT_ENABLE);
+
+            // 判断是否查找到服务和特征
+//            return gattService != null && gattCharacteristic != null
 
             // 返回true，表示查找到Service,否则连接会被主动断开
             // 断开设备的代码是我主动加的，因为没有找到对应UUID的Service，
             // 也就无法通信，所以不应该维持连接
             return true;
-
-            // 判断是否查找到服务和特征
-//            return gattService != null && gattCharacteristic != null
         }
 
         @Override

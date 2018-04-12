@@ -1,33 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/tv_device"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp">
-
-        <TextView
-            android:id="@+id/tv_device_name"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="设备名" />
-
-        <TextView
-            android:layout_width="10dp"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text=":" />
-
-        <TextView
-            android:id="@+id/tv_device_address"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="设备MAC地址" />
-    </LinearLayout>
+        android:layout_height="36dp"
+        android:layout_gravity="center"
+        android:gravity="center"/>
 
 </FrameLayout>

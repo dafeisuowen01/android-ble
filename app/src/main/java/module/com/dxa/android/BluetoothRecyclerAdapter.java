@@ -8,6 +8,9 @@ import android.widget.TextView;
 
 import com.dxa.android.recycler.RecyclerAdapter;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * 蓝牙设备
  */
@@ -27,21 +30,23 @@ public class BluetoothRecyclerAdapter extends RecyclerAdapter<
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         BluetoothDevice device = getItem(position);
-        holder.deviceName.setText(getText(device.getName()));
-        holder.deviceAddress.setText(getText(device.getAddress()));
+        holder.tvDevice.setText(String.format("名称: %s, mac: %s", device.getName(), device.getAddress()));
     }
 
     private String getText(String text) {
         return text != null ? text : "";
     }
 
+
     static class ViewHolder extends RecyclerAdapter.ViewHolder {
 
-        TextView deviceName;
-        TextView deviceAddress;
+        @BindView(R.id.tv_device)
+        TextView tvDevice;
 
         ViewHolder(View itemView) {
             super(itemView);
+            ButterKnife.bind(this, itemView);
         }
     }
+
 }
