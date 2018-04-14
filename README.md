@@ -10,7 +10,7 @@
  - 是否已连接/发现服务
  - 等...操作
  
- 提供了默认的实现类SimpleGattClient，可直接创建SimpleGattClient对象来管理蓝牙4.0设备的连接和状态的监听、数据的传输；具体的实现类: https://github.com/dingxiuan/android-ble/blob/master/app/src/main/java/library/com/dxa/android/ble/impl/SimpleGattClient.java
+ 提供了默认的实现类SimpleGattClient，可直接创建SimpleGattClient对象来管理蓝牙4.0设备的连接和状态的监听、数据的传输；具体的实现类: https://github.com/dingxiuan/android-ble/blob/master/android-bluetooth/src/main/java/com/dxa/android/ble/impl/SimpleGattClient.java
  
  提供了OnGattChangedListener接口，监听连接的状态，如连接成功、连接断开、发现服务、接收到数据等；有默认实现DefaultGattChangedListener，如不想实现全部的OnGattChangedListener方法，可直接继承自DefaultGattChangedListener；
 
