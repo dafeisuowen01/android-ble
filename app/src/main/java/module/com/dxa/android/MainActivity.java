@@ -8,6 +8,9 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,12 +26,14 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.dxa.android.ble.BleScanner;
 import com.dxa.android.ble.BluetoothGattClient;
-import com.dxa.android.ble.BluetoothLeScanner;
 import com.dxa.android.ble.BluetoothTool;
 import com.dxa.android.ble.OnGattChangedListener;
 import com.dxa.android.ble.impl.DefaultGattChangedListener;
 import com.dxa.android.ble.impl.SimpleGattClient;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,7 +51,7 @@ public class MainActivity extends AppCompatActivity
 
     private BluetoothRecyclerAdapter adapter;
 
-    private BluetoothLeScanner scanner;
+    private BleScanner scanner;
     private BluetoothGattClient client;
 
     private AlertDialog requestPermissionDialog;
@@ -70,7 +75,7 @@ public class MainActivity extends AppCompatActivity
             client.connect(getActivity(), device, false);
         });
 
-        scanner = new BluetoothLeScanner();
+        scanner = new BleScanner();
         scanner.setBLeScanListener(onScanListener);
 
         // 蓝牙4.0连接的客户端
@@ -111,6 +116,24 @@ public class MainActivity extends AppCompatActivity
         // 可以替换成自己的日志实现
 //        DLogger logger = new MyLoggerImpl();
 //        LoggerManager.getInstance().setLogger(logger);
+
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            BluetoothLeScanner leScanner = BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
+            leScanner.startScan(new ScanCallback() {
+                @Override
+                public void onScanResult(int callbackType, ScanResult result) {
+                }
+
+                @Override
+                public void onBatchScanResults(List<ScanResult> results) {
+                }
+
+                @Override
+                public void onScanFailed(int errorCode) {
+                }
+            });
+        }
     }
 
     @Override
@@ -205,7 +228,7 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
-    private final BluetoothLeScanner.Listener onScanListener = new BluetoothLeScanner.Listener() {
+    private final BleScanner.Listener onScanListener = new BleScanner.Listener() {
         /**
          * 开始扫描
          */

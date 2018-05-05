@@ -2,12 +2,18 @@ package com.dxa.android.ble;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
+import android.os.Build;
 import android.os.Handler;
+
+import java.util.List;
 
 /**
  * 蓝牙扫描类
  */
-public final class BluetoothLeScanner {
+public final class BleScanner {
 
     private static final long SECOND = 1000;
     private static final long MINUTE = 60 * SECOND;
@@ -16,6 +22,8 @@ public final class BluetoothLeScanner {
     private final Handler handler = new Handler();
     private volatile Listener listener;
     private volatile boolean scanning = false;
+
+    private BluetoothLeScanner leScanner;
 
     private final BluetoothAdapter.LeScanCallback leScanCallback =
             new BluetoothAdapter.LeScanCallback() {
@@ -28,22 +36,50 @@ public final class BluetoothLeScanner {
                 }
             };
 
-    private final Runnable stopScan = new Runnable() {
+    private final ScanCallback scanCallback = new ScanCallback() {
         @Override
-        public void run() {
-            BluetoothAdapter adapter = getAdapter();
-            if (isEnabled(adapter)) {
-                scanStop(adapter);
-            } else {
-                scanError();
+        public void onScanResult(int callbackType, ScanResult result) {
+            if (listener != null && checkVersion()) {
+                listener.onLeScan(result.getDevice(),
+                        result.getRssi(), result.getScanRecord().getBytes());
+            }
+        }
+
+        @Override
+        public void onBatchScanResults(List<ScanResult> results) {
+            if (listener != null && checkVersion()) {
+                for (ScanResult result : results) {
+                    listener.onLeScan(result.getDevice(),
+                            result.getRssi(), result.getScanRecord().getBytes());
+                }
+            }
+        }
+
+        @Override
+        public void onScanFailed(int errorCode) {
+            if (listener != null) {
+                listener.onScanError(new BLeScanException());
             }
         }
     };
 
-    public BluetoothLeScanner() {
+    private final Runnable stopScan = () -> {
+        BluetoothAdapter adapter = getAdapter();
+        if (isEnabled(adapter)) {
+            scanStop(adapter);
+        } else {
+            scanError();
+        }
+    };
+
+    public BleScanner() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            leScanner = getAdapter().getBluetoothLeScanner();
+        }
     }
 
-    public BluetoothLeScanner(Listener listener) {
+    public BleScanner(Listener listener) {
+        this();
         this.listener = listener;
     }
 
@@ -59,18 +95,31 @@ public final class BluetoothLeScanner {
         return adapter != null && adapter.isEnabled();
     }
 
+    private boolean checkVersion() {
+        return leScanner != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+    }
+
     private void scanStart(BluetoothAdapter adapter) {
         if (listener != null) {
             scanning = true;
             listener.onScanStart();
-            adapter.startLeScan(leScanCallback);
+
+            if (checkVersion()) {
+                leScanner.startScan(scanCallback);
+            } else {
+                adapter.startLeScan(leScanCallback);
+            }
         }
     }
 
     private void scanStop(BluetoothAdapter adapter) {
         if (listener != null) {
             scanning = false;
-            adapter.stopLeScan(leScanCallback);
+            if (checkVersion()) {
+                leScanner.stopScan(scanCallback);
+            } else {
+                adapter.stopLeScan(leScanCallback);
+            }
             listener.onScanCompleted();
         }
     }
@@ -79,7 +128,11 @@ public final class BluetoothLeScanner {
         if (listener != null) {
             scanning = false;
             handler.removeCallbacks(stopScan);
-            adapter.stopLeScan(leScanCallback);
+            if (checkVersion()) {
+                leScanner.stopScan(scanCallback);
+            } else {
+                adapter.stopLeScan(leScanCallback);
+            }
             listener.onScanCanceled();
         }
     }
@@ -118,8 +171,8 @@ public final class BluetoothLeScanner {
 
         if (duration < 1000) {
             duration = SECOND;
-        } else if (duration > HOUR) {
-            duration = MINUTE;
+        } else if (duration > 5 * MINUTE) {
+            duration = 5 * MINUTE;
         }
 
         startScan();

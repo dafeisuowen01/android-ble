@@ -25,14 +25,14 @@ android {
 }
 
 dependencies {
-    implementation project(':android-bluetooth')
+    api project(':android-bluetooth')
 
 //    def butterKnifeVersion = "8.4.0"
-    def butterKnifeVersion = "8.5.1"
-    compile "com.jakewharton:butterknife:${butterKnifeVersion}"
-    compile "com.jakewharton:butterknife-compiler:${butterKnifeVersion}"
-    compile "com.jakewharton:butterknife-annotations:${butterKnifeVersion}"
+    def butterKnifeVersion = "8.8.1"
+    api "com.jakewharton:butterknife:${butterKnifeVersion}"
+    api "com.jakewharton:butterknife-compiler:${butterKnifeVersion}"
+    api "com.jakewharton:butterknife-annotations:${butterKnifeVersion}"
 
     // 权限
-    implementation 'pub.devrel:easypermissions:1.1.1'
+    api 'pub.devrel:easypermissions:1.1.1'
 }
