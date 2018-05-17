@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.os.Build;
 import android.os.Handler;
@@ -40,8 +41,9 @@ public final class BleScanner {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             if (listener != null && checkVersion()) {
+                ScanRecord scanRecord = result.getScanRecord();
                 listener.onLeScan(result.getDevice(),
-                        result.getRssi(), result.getScanRecord().getBytes());
+                        result.getRssi(), scanRecord != null ? scanRecord.getBytes() : null);
             }
         }
 
@@ -49,8 +51,9 @@ public final class BleScanner {
         public void onBatchScanResults(List<ScanResult> results) {
             if (listener != null && checkVersion()) {
                 for (ScanResult result : results) {
+                    ScanRecord scanRecord = result.getScanRecord();
                     listener.onLeScan(result.getDevice(),
-                            result.getRssi(), result.getScanRecord().getBytes());
+                            result.getRssi(), scanRecord != null ? scanRecord.getBytes() : null);
                 }
             }
         }

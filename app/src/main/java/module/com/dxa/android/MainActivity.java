@@ -8,9 +8,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanResult;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,8 +29,6 @@ import com.dxa.android.ble.BluetoothTool;
 import com.dxa.android.ble.OnGattChangedListener;
 import com.dxa.android.ble.impl.DefaultGattChangedListener;
 import com.dxa.android.ble.impl.SimpleGattClient;
-
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -116,24 +111,6 @@ public class MainActivity extends AppCompatActivity
         // 可以替换成自己的日志实现
 //        DLogger logger = new MyLoggerImpl();
 //        LoggerManager.getInstance().setLogger(logger);
-
-
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            BluetoothLeScanner leScanner = BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
-            leScanner.startScan(new ScanCallback() {
-                @Override
-                public void onScanResult(int callbackType, ScanResult result) {
-                }
-
-                @Override
-                public void onBatchScanResults(List<ScanResult> results) {
-                }
-
-                @Override
-                public void onScanFailed(int errorCode) {
-                }
-            });
-        }
     }
 
     @Override
@@ -142,7 +119,6 @@ public class MainActivity extends AppCompatActivity
         if (requestPermissionDialog != null) {
             requestPermissionDialog.dismiss();
         }
-        handler.getLooper().quitSafely();
     }
 
     @Override
