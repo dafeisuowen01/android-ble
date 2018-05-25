@@ -100,9 +100,15 @@ public interface BluetoothGattClient extends GattOperator {
     boolean isDiscoverService();
 
     /**
+     * 是否自动连接
+     *
+     * @return 如果在连接时传入的是自动连接，自返回true，否则返回false
+     */
+    boolean autoConnect();
+
+    /**
      * 连接状态，如果支持直接返回Null
      */
-    @Nullable
     ConnectState getConnectState();
 
     /**

@@ -28,7 +28,6 @@ import com.dxa.android.ble.BluetoothGattClient;
 import com.dxa.android.ble.BluetoothTool;
 import com.dxa.android.ble.OnGattChangedListener;
 import com.dxa.android.ble.impl.SimpleGattChangedListener;
-import com.dxa.android.ble.impl.SimpleGattClient;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -44,7 +43,7 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
 
-    private BluetoothRecyclerAdapter adapter;
+    private BleDeviceAdapter adapter;
 
     private BleScanner scanner;
     private BluetoothGattClient client;
@@ -57,7 +56,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        adapter = new BluetoothRecyclerAdapter(this);
+        adapter = new BleDeviceAdapter(this);
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -74,13 +73,13 @@ public class MainActivity extends AppCompatActivity
         scanner.setBLeScanListener(onScanListener);
 
         // 蓝牙4.0连接的客户端
-        client = new SimpleGattClient();
+        client = new DefaultGattClient();
         // 设置状态改变的监听
         client.setOnGattChangedListener(changedListener);
 
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!bluetoothAdapter.isEnabled()) {
-            bluetoothAdapter.enable();
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        if (!adapter.isEnabled()) {
+            adapter.enable();
         }
 
         if (!hasLocationAndBluetoothPermissions()) {
@@ -290,9 +289,6 @@ public class MainActivity extends AppCompatActivity
             // 判断是否查找到服务和特征
 //            return gattService != null && gattCharacteristic != null
 
-            // 返回true，表示查找到Service,否则连接会被主动断开
-            // 断开设备的代码是我主动加的，因为没有找到对应UUID的Service，
-            // 也就无法通信，所以不应该维持连接
             return true;
         }
 

@@ -20,12 +20,21 @@ import java.util.UUID;
 
 /**
  * 默认的GattClient类
+ *
+ * @author DINGXIUAN
  */
 public class SimpleGattClient implements BluetoothGattClient {
 
     private final LoggerManager logger = LoggerManager.getInstance();
-    private GattCallback mCallback;
 
+    /**
+     *
+     */
+    private GattCallback mCallback;
+    /**
+     *
+     */
+    private GattChangedListenerDelegate mDelegate;
     /**
      * 连接的BluetoothGatt
      */
@@ -33,7 +42,7 @@ public class SimpleGattClient implements BluetoothGattClient {
     /**
      * 当前连接的设备
      */
-    private volatile BluetoothDevice mDevice;
+    private BluetoothDevice mDevice;
 
     /**
      * 默认的 BluetoothGattService
@@ -45,11 +54,21 @@ public class SimpleGattClient implements BluetoothGattClient {
     private volatile BluetoothGattCharacteristic mCharacteristic;
 
     public SimpleGattClient() {
-        this.mCallback = new GattCallback();
+        initialize();
     }
 
     public SimpleGattClient(GattCallback callback) {
         this.mCallback = callback;
+        initialize();
+    }
+
+    private void initialize() {
+        if (mCallback == null) {
+            GattCallback callback = new GattCallback();
+            setCallback(callback);
+        }
+        this.mDelegate = new GattChangedListenerDelegate();
+        this.mCallback.setOnGattChangedListener(mDelegate);
     }
 
     public void setCallback(GattCallback callback) {
@@ -114,6 +133,7 @@ public class SimpleGattClient implements BluetoothGattClient {
     @Override
     public boolean connect(Context context, BluetoothDevice device, boolean autoConnect) {
         if (isEnabled() && checkDevice(device)) {
+            mDelegate.onConnectDevice(autoConnect);
             mGatt = device.connectGatt(context, autoConnect, mCallback);
             mDevice = device;
             logger.i("连接蓝牙设备: ", device.getName(), ": ", device.getAddress(), " mGatt ", mGatt != null);
@@ -157,6 +177,7 @@ public class SimpleGattClient implements BluetoothGattClient {
             if (mDevice != null) {
                 logger.i("断开连接，", mDevice.getName(), ": ", mDevice.getAddress());
             }
+            mDelegate.setAutoConnect(false);
             mGatt.disconnect();
             mDevice = null;
             mService = null;
@@ -188,6 +209,7 @@ public class SimpleGattClient implements BluetoothGattClient {
             if (mDevice != null) {
                 logger.i("断开连接并关闭通道，", mDevice.getName(), ": ", mDevice.getAddress());
             }
+            mDelegate.setAutoConnect(false);
             disconnect();
             mGatt.close();
             mGatt = null;
@@ -201,7 +223,7 @@ public class SimpleGattClient implements BluetoothGattClient {
      */
     @Override
     public void setOnGattChangedListener(OnGattChangedListener listener) {
-        mCallback.setOnGattChangedListener(listener);
+        mDelegate.setChangedListener(listener);
     }
 
     /**
@@ -217,10 +239,15 @@ public class SimpleGattClient implements BluetoothGattClient {
         return mCallback.isDiscoverService();
     }
 
+    @Override
+    public boolean autoConnect() {
+        return mDelegate.isAutoConnect();
+    }
+
     @Nullable
     @Override
     public ConnectState getConnectState() {
-        return null;
+        return mDelegate.getState();
     }
 
     @Override
@@ -322,8 +349,9 @@ public class SimpleGattClient implements BluetoothGattClient {
      */
     @Override
     public boolean readCharacteristic(BluetoothGattCharacteristic characteristic, boolean enableNotification) {
-        if (!nonNull(characteristic, mGatt))
+        if (!nonNull(characteristic, mGatt)) {
             return false;
+        }
 
         if (enableNotification) {
             logger.i("readCharacteristic ==>: 设置特征提醒: ", characteristic.getUuid());
@@ -344,8 +372,9 @@ public class SimpleGattClient implements BluetoothGattClient {
 
     @Override
     public boolean writeCharacteristic(BluetoothGattService service, UUID characteristicUUID, byte[] value) {
-        if (service == null)
+        if (service == null) {
             return false;
+        }
 
         BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUUID);
         return writeCharacteristic(characteristic, value);
@@ -405,8 +434,9 @@ public class SimpleGattClient implements BluetoothGattClient {
 
     private static boolean nonNull(Object... objects) {
         for (Object o : objects) {
-            if (o == null)
+            if (o == null) {
                 return false;
+            }
         }
         return true;
     }

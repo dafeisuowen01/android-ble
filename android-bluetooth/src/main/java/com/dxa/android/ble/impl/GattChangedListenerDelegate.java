@@ -7,6 +7,14 @@ import android.bluetooth.BluetoothGattDescriptor;
 import com.dxa.android.ble.ConnectState;
 import com.dxa.android.ble.OnGattChangedListener;
 
+import static com.dxa.android.ble.ConnectState.AUTO_CONNECTED;
+import static com.dxa.android.ble.ConnectState.AUTO_CONNECTING;
+import static com.dxa.android.ble.ConnectState.AUTO_DISCONNECTED;
+import static com.dxa.android.ble.ConnectState.CONNECTED;
+import static com.dxa.android.ble.ConnectState.CONNECTING;
+import static com.dxa.android.ble.ConnectState.DISCONNECTED;
+import static com.dxa.android.ble.ConnectState.SERVICE_DISCOVER;
+
 /**
  * 状态监听的代理
  *
@@ -18,7 +26,10 @@ public class GattChangedListenerDelegate implements OnGattChangedListener {
     /**
      * 蓝牙连接的状态
      */
-    private volatile ConnectState state = ConnectState.DISCONNECTED;
+    private volatile ConnectState state = DISCONNECTED;
+    /**
+     * 是否自动重连
+     */
     private volatile boolean autoConnect = false;
 
     public GattChangedListenerDelegate() {
@@ -28,9 +39,9 @@ public class GattChangedListenerDelegate implements OnGattChangedListener {
         this.changedListener = changedListener;
     }
 
-    public void onConnect(boolean autoConnect) {
+    public void onConnectDevice(boolean autoConnect) {
         this.autoConnect = autoConnect;
-        this.state = ConnectState.CONNECTING;
+        this.state = autoConnect ? AUTO_CONNECTING : CONNECTING;
     }
 
     public OnGattChangedListener getChangedListener() {
@@ -55,7 +66,7 @@ public class GattChangedListenerDelegate implements OnGattChangedListener {
 
     @Override
     public void onConnected(BluetoothGatt gatt) {
-        this.state = ConnectState.CONNECTED;
+        this.state = autoConnect ? AUTO_CONNECTED : CONNECTED;
         if (changedListener != null) {
             this.changedListener.onConnected(gatt);
         }
@@ -63,18 +74,14 @@ public class GattChangedListenerDelegate implements OnGattChangedListener {
 
     @Override
     public boolean onServiceDiscover(BluetoothGatt gatt) {
-        this.state = ConnectState.SERVICE_DISCOVER;
+        this.state = SERVICE_DISCOVER;
         return changedListener != null && changedListener.onServiceDiscover(gatt);
     }
 
     @Override
     public void onDisconnected(BluetoothGatt gatt) {
         // 如果还自动重连，则会
-        if (autoConnect) {
-            this.state = ConnectState.AUTO_CONNECT;
-        } else {
-            this.state = ConnectState.DISCONNECTED;
-        }
+        this.state = autoConnect ? AUTO_DISCONNECTED : DISCONNECTED;
         if (changedListener != null) {
             this.changedListener.onDisconnected(gatt);
         }

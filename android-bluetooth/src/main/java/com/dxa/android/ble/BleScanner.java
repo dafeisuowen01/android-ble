@@ -152,8 +152,9 @@ public final class BleScanner {
      * 开始扫描
      */
     public void startScan() {
-        if (scanning)
+        if (scanning){
             return;
+        }
 
         BluetoothAdapter adapter = getAdapter();
         if (isEnabled(adapter)) {
@@ -169,8 +170,9 @@ public final class BleScanner {
      * @param duration 执行时长
      */
     public void startScan(long duration) {
-        if (scanning)
+        if (scanning) {
             return;
+        }
 
         if (duration < 1000) {
             duration = SECOND;

@@ -14,10 +14,10 @@ import butterknife.ButterKnife;
 /**
  * 蓝牙设备
  */
-public class BluetoothRecyclerAdapter extends RecyclerAdapter<
-        BluetoothDevice, BluetoothRecyclerAdapter.ViewHolder> {
+public class BleDeviceAdapter extends
+        RecyclerAdapter<BluetoothDevice, BleDeviceAdapter.ViewHolder> {
 
-    public BluetoothRecyclerAdapter(Context context) {
+    public BleDeviceAdapter(Context context) {
         super(context);
     }
 
