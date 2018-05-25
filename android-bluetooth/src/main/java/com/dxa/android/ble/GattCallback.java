@@ -1,4 +1,4 @@
-package com.dxa.android.ble.impl;
+package com.dxa.android.ble;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -7,8 +7,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothProfile;
 
-import com.dxa.android.ble.BluetoothGattClient;
-import com.dxa.android.ble.OnGattChangedListener;
+import com.dxa.android.ble.impl.SimpleGattChangedListener;
 import com.dxa.android.ble.log.LoggerManager;
 
 
@@ -21,17 +20,12 @@ public final class GattCallback extends BluetoothGattCallback {
     /**
      * 默认的OnGattChangedListener
      */
-    private final OnGattChangedListener defaultListener = new DefaultGattChangedListener();
+    private final OnGattChangedListener defaultListener = new SimpleGattChangedListener();
 
-    private BluetoothGattClient client;
     /**
      * 监听
      */
     private OnGattChangedListener mListener = defaultListener;
-    /**
-     * 没有服务是否主动断开
-     */
-    private boolean disconnectNotFoundService = true;
     /**
      * 是否连接
      */
@@ -41,8 +35,7 @@ public final class GattCallback extends BluetoothGattCallback {
      */
     private boolean discoverService;
 
-    public GattCallback(BluetoothGattClient client) {
-        this.client = client;
+    public GattCallback() {
     }
 
     public void setOnGattChangedListener(OnGattChangedListener listener) {
@@ -57,6 +50,9 @@ public final class GattCallback extends BluetoothGattCallback {
 
 
     public final OnGattChangedListener getListener() {
+        if (mListener == null) {
+            mListener = defaultListener;
+        }
         return mListener;
     }
 
@@ -145,12 +141,6 @@ public final class GattCallback extends BluetoothGattCallback {
         } else {
             discoverService = false;
             logger.w("onServicesDiscovered received: ", status);
-        }
-
-        // 没有服务时的处理（默认主动断开）
-        if ((!discoverService) && disconnectNotFoundService
-                && client != null) {
-            client.disconnect();
         }
     }
 
@@ -310,10 +300,4 @@ public final class GattCallback extends BluetoothGattCallback {
         return discoverService;
     }
 
-    /**
-     * 当找不到服务时是否断开
-     */
-    public void disconnectWhenNotFoundService(boolean disconnect) {
-        this.disconnectNotFoundService = disconnect;
-    }
 }

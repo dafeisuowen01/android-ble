@@ -3,7 +3,10 @@ package com.dxa.android.ble;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 /**
  * 蓝牙4.0客户端
@@ -97,8 +100,46 @@ public interface BluetoothGattClient extends GattOperator {
     boolean isDiscoverService();
 
     /**
-     * 设置没有服务时是否主动断开，默认断开
+     * 连接状态，如果支持直接返回Null
      */
-    void disconnectWhenNotFoundService(boolean disconnect);
+    @Nullable
+    ConnectState getConnectState();
 
+    /**
+     * 设置默认的 BluetoothGattService
+     *
+     * @param service BluetoothGattService 对象
+     */
+    void setGattService(BluetoothGattService service);
+
+    /**
+     * 获取默认的 BluetoothGattService
+     */
+    BluetoothGattService getGattService();
+
+    /**
+     * 设置默认的 BluetoothGattCharacteristic
+     *
+     * @param characteristic BluetoothGattCharacteristic 对象
+     */
+    void setGattCharacteristic(BluetoothGattCharacteristic characteristic);
+
+    /**
+     * 获取默认的 BluetoothGattCharacteristic
+     */
+    BluetoothGattCharacteristic getGattCharacteristic();
+
+    /**
+     * 往默认的 BluetoothGattCharacteristic 中写入数据
+     *
+     * @param value 数据
+     */
+    boolean write(byte[] value);
+
+    /**
+     * 往默认的 BluetoothGattCharacteristic 中写入数据
+     *
+     * @param hex 16进制数据
+     */
+    boolean write(String hex);
 }

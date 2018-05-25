@@ -7,9 +7,12 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.dxa.android.ble.BluetoothGattClient;
 import com.dxa.android.ble.BluetoothTool;
+import com.dxa.android.ble.ConnectState;
+import com.dxa.android.ble.GattCallback;
 import com.dxa.android.ble.OnGattChangedListener;
 import com.dxa.android.ble.log.LoggerManager;
 
@@ -30,10 +33,30 @@ public class SimpleGattClient implements BluetoothGattClient {
     /**
      * 当前连接的设备
      */
-    private BluetoothDevice mDevice;
+    private volatile BluetoothDevice mDevice;
+
+    /**
+     * 默认的 BluetoothGattService
+     */
+    private volatile BluetoothGattService mService;
+    /**
+     * 默认的 BluetoothGattCharacteristic
+     */
+    private volatile BluetoothGattCharacteristic mCharacteristic;
 
     public SimpleGattClient() {
-        this.mCallback = new GattCallback(this);
+        this.mCallback = new GattCallback();
+    }
+
+    public SimpleGattClient(GattCallback callback) {
+        this.mCallback = callback;
+    }
+
+    public void setCallback(GattCallback callback) {
+        if (callback == null) {
+            throw new IllegalArgumentException("GattCallback对象不能为Null.");
+        }
+        this.mCallback = callback;
     }
 
     /**
@@ -136,6 +159,8 @@ public class SimpleGattClient implements BluetoothGattClient {
             }
             mGatt.disconnect();
             mDevice = null;
+            mService = null;
+            mCharacteristic = null;
         }
     }
 
@@ -163,9 +188,8 @@ public class SimpleGattClient implements BluetoothGattClient {
             if (mDevice != null) {
                 logger.i("断开连接并关闭通道，", mDevice.getName(), ": ", mDevice.getAddress());
             }
-            mGatt.disconnect();
+            disconnect();
             mGatt.close();
-            mDevice = null;
             mGatt = null;
         }
     }
@@ -193,10 +217,46 @@ public class SimpleGattClient implements BluetoothGattClient {
         return mCallback.isDiscoverService();
     }
 
+    @Nullable
     @Override
-    public void disconnectWhenNotFoundService(boolean disconnect) {
-        mCallback.disconnectWhenNotFoundService(disconnect);
+    public ConnectState getConnectState() {
+        return null;
     }
+
+    @Override
+    public void setGattService(BluetoothGattService service) {
+        this.mService = service;
+    }
+
+    @Override
+    public BluetoothGattService getGattService() {
+        return mService;
+    }
+
+    @Override
+    public void setGattCharacteristic(BluetoothGattCharacteristic characteristic) {
+        this.mCharacteristic = characteristic;
+    }
+
+    @Override
+    public BluetoothGattCharacteristic getGattCharacteristic() {
+        return mCharacteristic;
+    }
+
+    @Override
+    public boolean write(byte[] value) {
+        return writeCharacteristic(mCharacteristic, value);
+    }
+
+    @Override
+    public boolean write(String hex) {
+        if (hex != null && hex.trim().length() > 0) {
+            byte[] value = BluetoothTool.hexToBin(hex);
+            return writeCharacteristic(mCharacteristic, value);
+        }
+        return false;
+    }
+
 
     private static String getDeviceAddress(BluetoothDevice device) {
         return device != null ? device.getAddress() : "";

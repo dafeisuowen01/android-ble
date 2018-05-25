@@ -27,7 +27,7 @@ import com.dxa.android.ble.BleScanner;
 import com.dxa.android.ble.BluetoothGattClient;
 import com.dxa.android.ble.BluetoothTool;
 import com.dxa.android.ble.OnGattChangedListener;
-import com.dxa.android.ble.impl.DefaultGattChangedListener;
+import com.dxa.android.ble.impl.SimpleGattChangedListener;
 import com.dxa.android.ble.impl.SimpleGattClient;
 
 import butterknife.BindView;
@@ -266,7 +266,7 @@ public class MainActivity extends AppCompatActivity
     private BluetoothGattCharacteristic gattCharacteristic;
 
     // 如果不想全部实现，可以继承自DefaultGattChangedListener，只复写部分方法
-    private final OnGattChangedListener changedListener = new DefaultGattChangedListener() {
+    private final OnGattChangedListener changedListener = new SimpleGattChangedListener() {
 
         @Override
         public void onConnected(BluetoothGatt gatt) {

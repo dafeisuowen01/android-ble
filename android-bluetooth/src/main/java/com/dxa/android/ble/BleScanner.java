@@ -236,4 +236,30 @@ public final class BleScanner {
             super("蓝牙不可用!");
         }
     }
+
+    /**
+     * 简单的监听器实现
+     */
+    public static abstract class SimpleListener implements Listener {
+
+        @Override
+        public void onScanStart() {
+
+        }
+
+        @Override
+        public void onScanCompleted() {
+
+        }
+
+        @Override
+        public void onScanCanceled() {
+
+        }
+
+        @Override
+        public void onScanError(Throwable e) {
+
+        }
+    }
 }

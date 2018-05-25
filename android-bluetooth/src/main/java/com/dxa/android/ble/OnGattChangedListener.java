@@ -10,6 +10,23 @@ import android.bluetooth.BluetoothGattDescriptor;
  */
 
 public interface OnGattChangedListener {
+    /**
+     * 连接设备成功
+     */
+    void onConnected(BluetoothGatt gatt);
+
+    /**
+     * Callback invoked when the list of remote services, characteristics and descriptors
+     * for the remote device have been updated, ie new services have been discovered.
+     *
+     * @param gatt GATT client invoked {@link BluetoothGatt#discoverServices}
+     */
+    boolean onServiceDiscover(BluetoothGatt gatt);
+
+    /**
+     * 设备断开
+     */
+    void onDisconnected(BluetoothGatt gatt);
 
     /**
      * Callback triggered as result of {@link BluetoothGatt#readPhy}
@@ -34,18 +51,7 @@ public interface OnGattChangedListener {
      */
     void onPhyUpdate(BluetoothGatt gatt, int txPhy, int rxPhy);
 
-    /**
-     * 连接设备成功
-     */
-    void onConnected(BluetoothGatt gatt);
 
-    /**
-     * Callback invoked when the list of remote services, characteristics and descriptors
-     * for the remote device have been updated, ie new services have been discovered.
-     *
-     * @param gatt GATT client invoked {@link BluetoothGatt#discoverServices}
-     */
-    boolean onServiceDiscover(BluetoothGatt gatt);
 
     /**
      * Callback reporting the result
@@ -125,11 +131,5 @@ public interface OnGattChangedListener {
      * @param mtu  The new MTU size
      */
     void onMtuChanged(BluetoothGatt gatt, int mtu);
-
-    /**
-     * 设备断开
-     */
-    void onDisconnected(BluetoothGatt gatt);
-
 
 }

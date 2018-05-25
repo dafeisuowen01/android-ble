@@ -11,7 +11,37 @@ import com.dxa.android.ble.OnGattChangedListener;
 /**
  * 默认的OnGattChangedListener实现类，什么也不做
  */
-public class DefaultGattChangedListener implements OnGattChangedListener {
+public class SimpleGattChangedListener implements OnGattChangedListener {
+    /**
+     * 连接设备成功
+     *
+     * @param gatt
+     */
+    @Override
+    public void onConnected(BluetoothGatt gatt) {
+
+    }
+
+    /**
+     * Callback invoked when the list of remote services, characteristics and descriptors
+     * for the remote device have been updated, ie new services have been discovered.
+     *
+     * @param gatt GATT client invoked {@link BluetoothGatt#discoverServices}
+     */
+    @Override
+    public boolean onServiceDiscover(BluetoothGatt gatt) {
+        return false;
+    }
+
+    /**
+     * 设备断开
+     *
+     * @param gatt
+     */
+    @Override
+    public void onDisconnected(BluetoothGatt gatt) {
+
+    }
 
     /**
      * Callback triggered as result of {@link BluetoothGatt#readPhy}
@@ -40,27 +70,6 @@ public class DefaultGattChangedListener implements OnGattChangedListener {
     @Override
     public void onPhyUpdate(BluetoothGatt gatt, int txPhy, int rxPhy) {
 
-    }
-
-    /**
-     * 连接设备成功
-     *
-     * @param gatt
-     */
-    @Override
-    public void onConnected(BluetoothGatt gatt) {
-
-    }
-
-    /**
-     * Callback invoked when the list of remote services, characteristics and descriptors
-     * for the remote device have been updated, ie new services have been discovered.
-     *
-     * @param gatt GATT client invoked {@link BluetoothGatt#discoverServices}
-     */
-    @Override
-    public boolean onServiceDiscover(BluetoothGatt gatt) {
-        return false;
     }
 
     /**
@@ -160,16 +169,6 @@ public class DefaultGattChangedListener implements OnGattChangedListener {
      */
     @Override
     public void onMtuChanged(BluetoothGatt gatt, int mtu) {
-
-    }
-
-    /**
-     * 设备断开
-     *
-     * @param gatt
-     */
-    @Override
-    public void onDisconnected(BluetoothGatt gatt) {
 
     }
 }
