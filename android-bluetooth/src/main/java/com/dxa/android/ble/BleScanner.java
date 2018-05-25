@@ -240,26 +240,26 @@ public final class BleScanner {
     /**
      * 简单的监听器实现
      */
-    public static abstract class SimpleListener implements Listener {
+    public static abstract class AbstractListener implements Listener {
 
         @Override
         public void onScanStart() {
-
+            // ~
         }
 
         @Override
         public void onScanCompleted() {
-
+            // ~
         }
 
         @Override
         public void onScanCanceled() {
-
+            // ~
         }
 
         @Override
         public void onScanError(Throwable e) {
-
+            // ~
         }
     }
 }
