@@ -28,6 +28,7 @@ import com.dxa.android.ble.BluetoothGattClient;
 import com.dxa.android.ble.BluetoothTool;
 import com.dxa.android.ble.OnGattChangedListener;
 import com.dxa.android.ble.impl.SimpleGattChangedListener;
+import com.dxa.android.ble.impl.SimpleGattClient;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -69,11 +70,9 @@ public class MainActivity extends AppCompatActivity
             client.connect(getActivity(), device, false);
         });
 
-        scanner = new BleScanner();
-        scanner.setBLeScanListener(onScanListener);
-
+        scanner = new BleScanner(onScanListener);
         // 蓝牙4.0连接的客户端
-        client = new DefaultGattClient();
+        client = new SimpleGattClient();
         // 设置状态改变的监听
         client.setOnGattChangedListener(changedListener);
 
@@ -154,6 +153,8 @@ public class MainActivity extends AppCompatActivity
             case R.id.btn_send:
                 onSendSomething();
                 break;
+            default:
+                break;
         }
     }
 
@@ -198,6 +199,8 @@ public class MainActivity extends AppCompatActivity
 //                    gatt.setCharacteristicNotification(gattCharacteristic, true);
                     // 或者使用此方法直接
                     BluetoothTool.notification(gatt, gattService, gattCharacteristic);
+                    break;
+                default:
                     break;
             }
         }

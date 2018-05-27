@@ -54,21 +54,17 @@ public class SimpleGattClient implements BluetoothGattClient {
     private volatile BluetoothGattCharacteristic mCharacteristic;
 
     public SimpleGattClient() {
-        initialize();
+        initialize(null);
     }
 
     public SimpleGattClient(GattCallback callback) {
-        this.mCallback = callback;
-        initialize();
+        initialize(callback);
     }
 
-    private void initialize() {
-        if (mCallback == null) {
-            GattCallback callback = new GattCallback();
-            setCallback(callback);
-        }
+    private void initialize(GattCallback callback) {
+        this.mCallback = (callback != null ? callback : new GattCallback());
         this.mDelegate = new GattChangedListenerDelegate();
-        this.mCallback.setOnGattChangedListener(mDelegate);
+        this.setCallback(callback);
     }
 
     public void setCallback(GattCallback callback) {
@@ -76,6 +72,7 @@ public class SimpleGattClient implements BluetoothGattClient {
             throw new IllegalArgumentException("GattCallback对象不能为Null.");
         }
         this.mCallback = callback;
+        this.mCallback.setOnGattChangedListener(mDelegate);
     }
 
     /**
