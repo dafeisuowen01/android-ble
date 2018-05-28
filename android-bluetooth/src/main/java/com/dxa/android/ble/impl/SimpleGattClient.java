@@ -62,7 +62,7 @@ public class SimpleGattClient implements BluetoothGattClient {
     }
 
     private void initialize(GattCallback callback) {
-        this.mCallback = (callback != null ? callback : new GattCallback());
+        callback = (callback != null ? callback : new GattCallback());
         this.mDelegate = new GattChangedListenerDelegate();
         this.setCallback(callback);
     }
@@ -206,7 +206,6 @@ public class SimpleGattClient implements BluetoothGattClient {
             if (mDevice != null) {
                 logger.i("断开连接并关闭通道，", mDevice.getName(), ": ", mDevice.getAddress());
             }
-            mDelegate.setAutoConnect(false);
             disconnect();
             mGatt.close();
             mGatt = null;
