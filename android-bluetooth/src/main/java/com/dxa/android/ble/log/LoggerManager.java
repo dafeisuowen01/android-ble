@@ -22,6 +22,11 @@ public final class LoggerManager implements DLogger {
         this.logger = logger != null ? logger : this.logger;
     }
 
+    @Override
+    public void setDebug(boolean debug) {
+
+    }
+
     /**
      * 设置标签
      */

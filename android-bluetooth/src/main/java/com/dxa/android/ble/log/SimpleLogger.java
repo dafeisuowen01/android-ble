@@ -7,19 +7,19 @@ import android.util.Log;
  */
 public class SimpleLogger implements DLogger {
 
-    private final boolean ready;
+    private volatile boolean debug;
     private final StringBuffer buffer;
 
     private String tag = "TAG@[bluetooth]";
 
-    public SimpleLogger(boolean ready) {
-        this.ready = ready;
+    public SimpleLogger(boolean debug) {
+        this.debug = debug;
         this.buffer = new StringBuffer();
     }
 
     private String append(Object... args) {
         String message = "";
-        if (ready) {
+        if (debug) {
             synchronized (buffer) {
                 buffer.setLength(0);
                 for (Object o : args) {
@@ -29,6 +29,11 @@ public class SimpleLogger implements DLogger {
             }
         }
         return message;
+    }
+
+    @Override
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 
     @Override
@@ -43,7 +48,7 @@ public class SimpleLogger implements DLogger {
      */
     @Override
     public void d(Object... messages) {
-        if (ready) {
+        if (debug) {
             Log.d(tag, append(messages));
         }
     }
@@ -55,7 +60,7 @@ public class SimpleLogger implements DLogger {
      */
     @Override
     public void i(Object... messages) {
-        if (ready) {
+        if (debug) {
             Log.i(tag, append(messages));
         }
     }
@@ -67,7 +72,7 @@ public class SimpleLogger implements DLogger {
      */
     @Override
     public void w(Object... messages) {
-        if (ready) {
+        if (debug) {
             Log.w(tag, append(messages));
         }
     }
@@ -79,7 +84,7 @@ public class SimpleLogger implements DLogger {
      */
     @Override
     public void e(Object... messages) {
-        if (ready) {
+        if (debug) {
             Log.e(tag, append(messages));
         }
     }

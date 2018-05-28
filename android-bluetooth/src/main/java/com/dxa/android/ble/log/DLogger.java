@@ -4,6 +4,10 @@ package com.dxa.android.ble.log;
  * 日志
  */
 public interface DLogger {
+    /**
+     * 是否打印日志
+     */
+    void setDebug(boolean debug);
 
     /**
      * 设置标签
