@@ -24,7 +24,9 @@ public final class LoggerManager implements DLogger {
 
     @Override
     public void setDebug(boolean debug) {
-
+        if (logger != null) {
+            logger.setDebug(debug);
+        }
     }
 
     /**
