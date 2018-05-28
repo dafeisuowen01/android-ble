@@ -6,8 +6,9 @@ android {
 }
 
 def jarName = getName();
-def jarVersion = "-v1.2";
+def jarVersion = "-v1.3";
 def sdkDestinationPath = "build";
+//def zipFile = file('build/intermediates/classes/debug/classes.jar')
 def zipFile = file('build/intermediates/bundles/debug/classes.jar')
 
 println('当前构建的jar包是: ' + jarName)

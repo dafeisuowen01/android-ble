@@ -10,7 +10,7 @@ public final class LoggerManager implements DLogger {
         return Holder.INSTANCE;
     }
 
-    private DLogger logger = new SimpleLogger(true);
+    private DLogger logger = new SimpleLogger(false);
 
     private LoggerManager() {
     }

@@ -5,12 +5,12 @@ import android.util.Log;
 /**
  * DLogger的简单实现
  */
-public class SimpleLogger implements DLogger{
+public class SimpleLogger implements DLogger {
 
     private final boolean ready;
     private final StringBuffer buffer;
 
-    private String tag = "TAG@BLUETOOTH";
+    private String tag = "TAG@[bluetooth]";
 
     public SimpleLogger(boolean ready) {
         this.ready = ready;

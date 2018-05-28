@@ -10,6 +10,7 @@ import com.dxa.android.ble.OnGattChangedListener;
 import static com.dxa.android.ble.ConnectState.AUTO_CONNECTED;
 import static com.dxa.android.ble.ConnectState.AUTO_CONNECTING;
 import static com.dxa.android.ble.ConnectState.AUTO_DISCONNECTED;
+import static com.dxa.android.ble.ConnectState.AUTO_SERVICE_DISCOVER;
 import static com.dxa.android.ble.ConnectState.CONNECTED;
 import static com.dxa.android.ble.ConnectState.CONNECTING;
 import static com.dxa.android.ble.ConnectState.DISCONNECTED;
@@ -74,7 +75,7 @@ public class GattChangedListenerDelegate implements OnGattChangedListener {
 
     @Override
     public boolean onServiceDiscover(BluetoothGatt gatt) {
-        this.state = SERVICE_DISCOVER;
+        this.state = autoConnect ? AUTO_SERVICE_DISCOVER : SERVICE_DISCOVER;
         return changedListener != null && changedListener.onServiceDiscover(gatt);
     }
 

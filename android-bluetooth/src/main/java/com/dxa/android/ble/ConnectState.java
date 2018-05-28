@@ -24,9 +24,13 @@ public enum ConnectState {
      */
     AUTO_CONNECTED(2, true, "auto_connected", "已连接(自动)"),
     /**
-     * 发现服务(可以进行通讯)
+     * 发现服务(不自动)
      */
-    SERVICE_DISCOVER(3, true, "found_service", "发现服务"),
+    SERVICE_DISCOVER(3, false, "found_service", "发现服务(不自动)"),
+    /**
+     * 发现服务(自动)
+     */
+    AUTO_SERVICE_DISCOVER(3, true, "found_service", "发现服务(自动)"),
     /**
      * 断开连接(彻底断开了连接)
      */
