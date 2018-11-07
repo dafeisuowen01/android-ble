@@ -2,10 +2,12 @@ package com.dxa.android.recycler;
 
 import android.content.Context;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,15 +48,20 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerAdapter.ViewHolder>
     }
 
     @Override
-    public abstract VH onCreateViewHolder(ViewGroup parent, int viewType);
+    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return onCreateViewHolder(inflater, parent, viewType);
+    }
+
+    public abstract VH onCreateViewHolder(LayoutInflater inflater, @NonNull ViewGroup parent, int viewType);
 
     @Override
-    public abstract void onBindViewHolder(VH holder, int position);
+    public void onBindViewHolder(VH holder, int position) {
+        holder.setData(getItem(position), position, listener);
+    }
 
     @Override
     public void onBindViewHolder(VH holder, int position, List<Object> payloads) {
         super.onBindViewHolder(holder, position, payloads);
-        holder.setAdapter(this);
     }
 
     @Override
@@ -82,8 +89,8 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerAdapter.ViewHolder>
     }
 
     @SuppressWarnings("unchecked")
-    protected <V extends View> V getView(@LayoutRes int resId, ViewGroup parent){
-        return (V) getInflater().inflate(resId, parent);
+    protected <V extends View> V getView(@LayoutRes int resId, ViewGroup parent) {
+        return (V) getInflater().inflate(resId, parent, false);
     }
 
     @Override
@@ -133,8 +140,9 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerAdapter.ViewHolder>
         if (!repeat) {
             ArrayList<T> tempList = new ArrayList<>();
             for (T t : list) {
-                if (!contains(t))
+                if (!contains(t)) {
                     tempList.add(t);
+                }
             }
             list = tempList;
 
@@ -175,9 +183,11 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerAdapter.ViewHolder>
     @Override
     public boolean remove(int from, int to) {
         if (from > to && contains(from) && contains(to)) {
+            ArrayList<T> removedList = new ArrayList<>();
             for (int i = from; i < to; i++) {
-                items.remove(from);
+                removedList.add(items.get(i));
             }
+            items.removeAll(removedList);
             notifyItemMoved(from, to);
             return true;
         }
@@ -245,13 +255,6 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerAdapter.ViewHolder>
         this.listener = listener;
     }
 
-    private void onItemClick(View itemView, T t, int position){
-        if (listener != null){
-            t = getItem(position);
-            listener.onItemClick(itemView, t, position);
-        }
-    }
-
     /**
      * 当Item被点击时的监听
      */
@@ -260,29 +263,50 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerAdapter.ViewHolder>
          * 当Item被点击时的回调
          *
          * @param parentView 点击的View
-         * @param t     对应的Item
-         * @param position View位置
+         * @param t          对应的Item
+         * @param position   View位置
          */
         void onItemClick(View parentView, T t, int position);
     }
 
 
+    public static class ViewHolder<T> extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-
-        private RecyclerAdapter adapter;
+        private OnItemClickListener<T> listener;
+        private T item;
+        private int position;
 
         public ViewHolder(View itemView) {
             super(itemView);
-            itemView.setOnClickListener((v) -> {
-                int position = getAdapterPosition();
-                adapter.onItemClick(v, null, position);
-            });
+            itemView.setOnClickListener(this);
         }
 
+        public void setListener(OnItemClickListener<T> listener) {
+            this.listener = listener;
+        }
 
-        void setAdapter(RecyclerAdapter adapter) {
-            this.adapter = adapter;
+        /**
+         * 设置Item的数据
+         *
+         * @param item     ITEM
+         * @param position 位置
+         */
+        public final void setData(T item, int position, OnItemClickListener<T> listener) {
+            this.listener = listener;
+            this.item = item;
+            this.position = position;
+            setData(item, position);
+        }
+
+        public void setData(T item, int position) {
+            // ~
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (listener != null) {
+                listener.onItemClick(v, item, position);
+            }
         }
     }
 
