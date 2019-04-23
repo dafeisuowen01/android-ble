@@ -1,0 +1,100 @@
+apply from: "${rootProject.getProjectDir()}/buildSystem/AndroidConfig.gradle"
+
+//def signFilePath = "${rootProject.getProjectDir()}/signing/";
+def signFilePath = "D:\\signing\\";
+def props = new Properties()
+props.load(new FileInputStream(file(signFilePath + "appkey.properties")))
+props.load(new FileInputStream(file(signFilePath + "signing.properties")))
+
+def keystoreFile = signFilePath + props.getProperty('KEYSTORE_FILE');
+props.setProperty('KEYSTORE_FILE', keystoreFile);
+
+static def releaseTime() {
+    return new Date().format('yyyyMMddHH');
+}
+
+android {
+
+//    def appName = props["APP_NAME"]
+    def appName = "蓝牙4.0"
+
+//    defaultConfig {
+//        manifestPlaceholders = [
+//                UMENG_APPKEY: props['UMENG_APPKEY'],
+//                appId: appId
+//        ]
+//    }
+
+    flavorDimensions "origin"
+
+    // 多渠道打包
+    productFlavors {
+        origin {
+//            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "origin"]
+            dimension "origin"
+        }
+    }
+
+//    productFlavors.all { flavor ->
+//        manifestPlaceholders.put("UMENG_CHANNEL_VALUE", name)
+//    }
+
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    signingConfigs {
+        // debug时打包用的签名
+        debug {
+            keyAlias props['KEY_ALIAS']
+            keyPassword props['KEY_PASSWORD']
+            storeFile file(props['KEYSTORE_FILE'])
+            storePassword props['KEYSTORE_PASSWORD']
+        }
+
+        release {
+            keyAlias props['KEY_ALIAS']
+            keyPassword props['KEY_PASSWORD']
+            storeFile file(props['KEYSTORE_FILE'])
+            storePassword props['KEYSTORE_PASSWORD']
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            zipAlignEnabled true
+            // 移除无用的resource文件
+            shrinkResources false
+            jniDebuggable true
+            debuggable true
+            jniDebuggable true
+            renderscriptOptimLevel 24
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            signingConfig signingConfigs.debug
+        }
+
+        release {
+            minifyEnabled true // 是否混淆
+            shrinkResources true // 是否去除无效的资源文件
+            zipAlignEnabled true
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "${rootProject.getProjectDir()}/buildSystem/proguard-rules.pro"
+            debuggable false
+            jniDebuggable false
+            renderscriptDebuggable true
+            renderscriptOptimLevel 24 // 不渲染
+
+            signingConfig signingConfigs.release
+
+            android.applicationVariants.all { variant ->
+                variant.outputs.all {
+                    outputFileName = "${appName}-${variant.versionName}-${variant.name}-${releaseTime()}.apk"
+                }
+            }
+        }
+
+    }
+}

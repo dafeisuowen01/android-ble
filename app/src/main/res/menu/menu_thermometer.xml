@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_ble_connected"
+        android:icon="@drawable/ic_bluetooth_connected"
+        android:title="连蓝牙设备"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_ble_reconnect"
+        android:icon="@drawable/ic_bluetooth"
+        android:title="重连"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_ble_disconnected"
+        android:icon="@drawable/ic_bluetooth_disabled"
+        android:title="断开蓝牙"
+        app:showAsAction="never" />
+
+</menu>

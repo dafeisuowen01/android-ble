@@ -5,11 +5,12 @@ android {
     }
 }
 
-def jarName = getName();
-def jarVersion = "-v1.3";
-def sdkDestinationPath = "build";
-//def zipFile = file('build/intermediates/classes/debug/classes.jar')
-def zipFile = file('build/intermediates/bundles/debug/classes.jar')
+def jarName = getName()
+def version = "1.3.2"
+def jarVersion = "-v" + version
+//def sdkDestinationPath = "build"
+def sdkDestinationPath = version
+def zipFile = file('build/intermediates/intermediate-jars/debug/classes.jar')
 
 println('当前构建的jar包是: ' + jarName)
 
@@ -35,7 +36,17 @@ task makeJarSource(type: Jar) {
     destinationDir = file(sdkDestinationPath)
 }
 
+task makeJarWithSource(type: Jar) {
+    from zipTree(zipFile)
+    baseName = jarName + jarVersion + "-aio"
+    //将assets目录打入jar包
+    from fileTree(dir: 'src/main',includes: ['assets/**'])
+    from fileTree(dir: 'src/main/java',includes: ['com/**/*.java'])
+    destinationDir = file(sdkDestinationPath)
+}
+
 makeJar.dependsOn(deleteBuild, build)
 makeJar.dependsOn(makeJarSource, build)
+makeJar.dependsOn(makeJarWithSource, build)
 
 

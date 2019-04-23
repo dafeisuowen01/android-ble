@@ -7,7 +7,8 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import com.dxa.android.ble.BluetoothGattClient;
 import com.dxa.android.ble.BluetoothTool;
@@ -274,7 +275,7 @@ public class SimpleGattClient implements BluetoothGattClient {
     @Override
     public boolean write(String hex) {
         if (hex != null && hex.trim().length() > 0) {
-            byte[] value = BluetoothTool.hexToBin(hex);
+            byte[] value = BluetoothTool.hexToByte(hex);
             return writeCharacteristic(mCharacteristic, value);
         }
         return false;

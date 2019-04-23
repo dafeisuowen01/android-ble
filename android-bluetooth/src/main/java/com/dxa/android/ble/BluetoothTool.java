@@ -12,7 +12,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 蓝牙4.0的工具类
@@ -59,8 +58,8 @@ public class BluetoothTool {
      * @param bin 二进制字节数组
      * @return 返回16进制字符串或空
      */
-    public static String binToHex(byte[] bin) {
-        return binToHex(bin, false);
+    public static String byteToHex(byte[] bin) {
+        return byteToHex(bin, false);
     }
 
     /**
@@ -70,7 +69,7 @@ public class BluetoothTool {
      * @param lowerCase 是否为小写字母
      * @return 返回16进制字符串或空
      */
-    public static String binToHex(byte[] bin, boolean lowerCase) {
+    public static String byteToHex(byte[] bin, boolean lowerCase) {
         if (isEmpty(bin)) {
             return NULL;
         }
@@ -92,8 +91,8 @@ public class BluetoothTool {
      * @param hex 字符串
      * @return 转换的字节数组
      */
-    public static byte[] hexToBin(String hex) {
-        return hexToBin(hex, null);
+    public static byte[] hexToByte(String hex) {
+        return hexToByte(hex, null);
     }
 
     /**
@@ -103,8 +102,8 @@ public class BluetoothTool {
      * @param defaultValue 默认值
      * @return 转换的字节数组
      */
-    public static byte[] hexToBin(String hex, byte[] defaultValue) {
-        if (notEmpty(hex)) {
+    public static byte[] hexToByte(String hex, byte[] defaultValue) {
+        if (isNotEmpty(hex)) {
             int length = hex.length() / 2;
             char[] ch = hex.toUpperCase().toCharArray();
             byte[] bin = new byte[length];
@@ -127,15 +126,188 @@ public class BluetoothTool {
     /**
      * 将字节数组转化成10进制整数
      *
-     * @param bytes 长度为2的字节数组
+     * @param high 高位
+     * @param low  低位
      * @return 返回一个转换后的10进制整数
      */
-    public static int byteToInt(byte[] bytes) {
-        int value = bytes[0] & 0xFF;
-        int temp = bytes[1];
-        value |= ((temp << 8) & 0xFF00);
+    public static int byteToInt(byte high, byte low) {
+        int value = low & 0xFF;
+        value |= ((high << 8) & 0xFF00);
         return value;
     }
+
+
+    /**
+     * 整形数值转换成字节数组
+     *
+     * @param num 整形数值
+     * @param bit 位，根据位取几个字节
+     * @return 返回转换后的字节数组
+     */
+    public static byte[] numberToBin(long num, int bit) {
+        int size = bit / 8;
+        byte[] b = new byte[size];
+        for (int i = 0; i < size; i++) {
+            b[i] = (byte) (num >> ((bit - 8) - i * 8));
+        }
+        return b;
+    }
+
+    public static byte numberForBit(long num, int bit) {
+        return (byte) (num >> (bit * 8));
+    }
+
+    /**
+     * 转换成整数
+     *
+     * @param num 数值
+     * @return 返回一个整数
+     */
+    public static byte[] shortToByte(short num) {
+        return numberToBin(num, 16);
+    }
+
+    /**
+     * 转换成整数
+     *
+     * @param num 数值
+     * @return 返回一个整数
+     */
+    public static byte[] shortToByte(int num) {
+        return numberToBin(num, 16);
+    }
+
+    /**
+     * 转换成整数
+     *
+     * @param num 数值
+     * @return 返回一个整数
+     */
+    public static byte[] intToByte(int num) {
+        return numberToBin(num, 32);
+    }
+
+    /**
+     * 转换成整数
+     *
+     * @param num 数值
+     * @return 返回一个整数
+     */
+    public static byte[] longToByte(long num) {
+        return numberToBin(num, 64);
+    }
+
+
+    /**
+     * 整形转换成16进制
+     *
+     * @param num 数值
+     * @return 返回16进制字符串
+     */
+    public static String intToHex(int num) {
+        String hex = Integer.toHexString(num);
+        return (hex.length() & 0x01) != 0 ? "0" + hex : hex;
+    }
+
+    /**
+     * 整形转换成16进制
+     *
+     * @param num 数值
+     * @return 返回16进制字符串
+     */
+    public static byte[] intToByte2(int num) {
+        return hexToByte(intToHex(num));
+    }
+
+    /**
+     * 转换成整数
+     *
+     * @param num 数值
+     * @return 返回一个整数
+     */
+    public static byte[] unsignedIntToByte(int num) {
+        int size;
+        if ((num >> 24) > 0) {
+            size = 4;
+        } else if ((num >> 16) > 0) {
+            size = 3;
+        } else if ((num >> 8) > 0) {
+            size = 2;
+        } else {
+            size = 1;
+        }
+        byte[] b = new byte[size];
+        for (int i = size; i > 0; i--) {
+            b[i] = (byte) (num >> (24 - i * 8));
+        }
+        return b;
+    }
+
+//    /**
+//     * 将字节数组转化成10进制整数
+//     *
+//     * @param bytes 字节数组
+//     * @return 返回一个转换后的10进制整数
+//     */
+//    public static long byteToLong(byte... bytes) {
+//        long value = 0;
+//        for (byte b : bytes) {
+//            value <<= bytes.length;
+//            value |= (b & 0xff);
+//        }
+//        return value;
+//    }
+
+
+    /**
+     * 字节数组转换成长整数
+     *
+     * @param bytes 字节数组
+     * @return 返回长整数值
+     */
+    public static long byteToLong(byte... bytes) {
+        long value = 0;
+        for (byte b : bytes) {
+            value <<= 8;
+            value |= b & 0xff;
+        }
+        return value;
+    }
+
+    /**
+     * 字节数组转换成整数
+     *
+     * @param bytes 字节数组
+     * @return 返回整数值
+     */
+    public static int byteToInt(byte... bytes) {
+        return (int) byteToLong(bytes);
+    }
+
+    /**
+     * 转换成整数
+     *
+     * @param b 字节
+     * @return 返回一个整数
+     */
+    public static short byteToShort(byte b) {
+        return (short) ((b & 0xFF) * 256 + (b & 0xFF));
+    }
+
+    /**
+     * 取低字节
+     */
+    public static int byteToIntLow(byte b) {
+        return (b & 0xFF);
+    }
+
+    /**
+     * 取高字节
+     */
+    public static int byteToIntHigh(byte b) {
+        return (b & 0xFF) * 256;
+    }
+
 
     /******************************************************************/
 
@@ -242,7 +414,7 @@ public class BluetoothTool {
          */
         public String getDescriptorValueType(byte[] value) {
             String type = descriptorValueTypes.get(value);
-            if (isEmpty(type) && notEmpty(value)) {
+            if (isEmpty(type) && isNotEmpty(value)) {
                 byte[] temp = {value[0], value[1]};
                 type = descriptorValueTypes.get(temp);
             }
@@ -324,7 +496,7 @@ public class BluetoothTool {
      */
     public static BluetoothGattCharacteristic getCharacteristic(
             BluetoothGattService service, UUID characteristicUUID) {
-        if (!nonNull(service, characteristicUUID))
+        if (!isNonNull(service, characteristicUUID))
             return null;
         return service.getCharacteristic(characteristicUUID);
     }
@@ -370,7 +542,7 @@ public class BluetoothTool {
     public static boolean setNotification(BluetoothGatt gatt,
                                           BluetoothGattCharacteristic characteristic,
                                           boolean enable) {
-        return nonNull(gatt, characteristic)
+        return isNonNull(gatt, characteristic)
                 && gatt.setCharacteristicNotification(characteristic, enable);
     }
 
@@ -388,14 +560,14 @@ public class BluetoothTool {
 
     /**
      * 设置描述符的值
-     * {@link BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE}
-     * {@link BluetoothGattDescriptor.ENABLE_INDICATION_VALUE}
-     * {@link BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE}
+     * {@link BluetoothGattDescriptor#ENABLE_NOTIFICATION_VALUE}
+     * {@link BluetoothGattDescriptor#ENABLE_INDICATION_VALUE}
+     * {@link BluetoothGattDescriptor#DISABLE_NOTIFICATION_VALUE}
      */
     public static boolean setDescriptorValue(BluetoothGatt gatt,
                                              BluetoothGattDescriptor descriptor,
                                              byte[] value) {
-        return nonNull(gatt, descriptor) && descriptor.setValue(value);
+        return isNonNull(gatt, descriptor) && descriptor.setValue(value);
     }
 
     /**
@@ -416,7 +588,7 @@ public class BluetoothTool {
      */
     public static boolean notification(
             BluetoothGatt gatt, BluetoothGattService service, BluetoothGattCharacteristic characteristic) {
-        if (nonNull(gatt, service, characteristic)) {
+        if (isNonNull(gatt, service, characteristic)) {
             gatt.setCharacteristicNotification(characteristic, true);
             // 适配部分机型(会导致部分手机无法接收到数据)
             // gatt.readCharacteristic(characteristic);
@@ -472,7 +644,7 @@ public class BluetoothTool {
     public static boolean writeCharacteristic(BluetoothGatt gatt,
                                               BluetoothGattCharacteristic characteristic,
                                               String value) {
-        byte[] bin = hexToBin(value);
+        byte[] bin = hexToByte(value);
         return writeCharacteristic(gatt, characteristic, bin);
     }
 
@@ -512,7 +684,7 @@ public class BluetoothTool {
                 builder.append("; properties: ").append(characteristic.getProperties());
                 builder.append("; writeType: ").append(characteristic.getWriteType());
                 builder.append("; value: ")
-                        .append(BluetoothTool.binToHex(characteristic.getValue()));
+                        .append(BluetoothTool.byteToHex(characteristic.getValue()));
                 Log.i(tag, builder.toString());
                 builder.setLength(0);
 
@@ -524,7 +696,7 @@ public class BluetoothTool {
                     builder.append("uuid: ").append(descriptor.getUuid());
                     builder.append("; permissions: ").append(descriptor.getPermissions());
                     builder.append("; value: ")
-                            .append(BluetoothTool.binToHex(characteristic.getValue()));
+                            .append(BluetoothTool.byteToHex(characteristic.getValue()));
                     Log.d(tag, builder.toString());
                     builder.setLength(0);
                 }
@@ -540,11 +712,11 @@ public class BluetoothTool {
     /*****************************************************************************/
 
 
-    private static boolean notEmpty(byte[] s) {
+    private static boolean isNotEmpty(byte[] s) {
         return s != null && s.length > 0;
     }
 
-    private static boolean nonNull(Object... objects) {
+    private static boolean isNonNull(Object... objects) {
         for (Object o : objects) {
             if (o == null)
                 return false;
@@ -552,7 +724,7 @@ public class BluetoothTool {
         return true;
     }
 
-    private static boolean notEmpty(String s) {
+    private static boolean isNotEmpty(String s) {
         return s != null && s.trim().length() > 0;
     }
 

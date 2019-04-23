@@ -6,17 +6,10 @@ apply from: "${rootProject.getProjectDir()}/buildSystem/AndroidConfig.gradle"
 android {
     defaultConfig {
         applicationId "com.dxa.android"
-
-        javaCompileOptions {
-            annotationProcessorOptions {
-                includeCompileClasspath = true
-            }
-        }
     }
     sourceSets {
         main {
             java.srcDirs = [
-                    'src/main/java/library',
                     'src/main/java/module',
             ]
         }
@@ -25,14 +18,13 @@ android {
 }
 
 dependencies {
-    api project(':android-bluetooth')
-
-//    def butterKnifeVersion = "8.4.0"
-    def butterKnifeVersion = "8.8.1"
-    api "com.jakewharton:butterknife:${butterKnifeVersion}"
-    api "com.jakewharton:butterknife-compiler:${butterKnifeVersion}"
-    api "com.jakewharton:butterknife-annotations:${butterKnifeVersion}"
+//    implementation project(':android-bluetooth')
 
     // 权限
-    api 'pub.devrel:easypermissions:1.1.1'
+    implementation 'pub.devrel:easypermissions:2.0.0'
+    //下拉刷新上拉加载库
+    implementation 'com.jude:easyrecyclerview:4.4.2'
+    implementation 'com.afollestad.material-dialogs:core:0.9.0.1'
+    // 权限
+    implementation 'com.yanzhenjie:permission:2.0.0-rc4'
 }
