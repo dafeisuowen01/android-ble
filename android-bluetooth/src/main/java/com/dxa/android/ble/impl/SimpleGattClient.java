@@ -41,18 +41,15 @@ public class SimpleGattClient implements BluetoothGattClient {
      */
     private BluetoothGatt mGatt;
     /**
-     * 当前连接的设备
+     * 读 BluetoothGattService
      */
-    private BluetoothDevice mDevice;
-
+    private volatile BluetoothGattService mReadService;
+    private volatile BluetoothGattCharacteristic mReadCharacteristic;
     /**
-     * 默认的 BluetoothGattService
+     * 写 BluetoothGattService
      */
-    private volatile BluetoothGattService mService;
-    /**
-     * 默认的 BluetoothGattCharacteristic
-     */
-    private volatile BluetoothGattCharacteristic mCharacteristic;
+    private volatile BluetoothGattService mWriteService;
+    private volatile BluetoothGattCharacteristic mWriteCharacteristic;
 
     public SimpleGattClient() {
         initialize(null);
@@ -100,7 +97,7 @@ public class SimpleGattClient implements BluetoothGattClient {
      */
     @Override
     public BluetoothDevice getCurrentDevice() {
-        return mDevice;
+        return getBluetoothGatt() != null ? getBluetoothGatt().getDevice() : null;
     }
 
     /**
@@ -132,17 +129,17 @@ public class SimpleGattClient implements BluetoothGattClient {
     public boolean connect(Context context, BluetoothDevice device, boolean autoConnect) {
         if (isEnabled() && checkDevice(device)) {
             mDelegate.onConnectDevice(autoConnect);
-            mGatt = device.connectGatt(context, autoConnect, mCallback);
-            mDevice = device;
-            logger.i("连接蓝牙设备: ", device.getName(), ": ", device.getAddress(), " mGatt ", mGatt != null);
-            return mGatt != null;
+            BluetoothGatt gatt = device.connectGatt(context, autoConnect, mCallback);
+            setBluetoothGatt(gatt);
+            logger.i("连接蓝牙设备: ", device.getName(), ": ", device.getAddress(), " mGatt ", gatt != null);
+            return gatt != null;
         }
         return false;
     }
 
     private boolean checkDevice(BluetoothDevice device) {
         // 设备不为null且当前设备为null时，可以连接
-        return (device != null && mDevice == null);
+        return (device != null && getCurrentDevice() == null);
     }
 
     /**
@@ -152,8 +149,14 @@ public class SimpleGattClient implements BluetoothGattClient {
      */
     @Override
     public boolean reconnect() {
-        logger.i("重新连接");
-        return mGatt != null && mGatt.connect();
+        final BluetoothGatt gatt = getBluetoothGatt();
+        if (gatt != null) {
+            logger.d("重新连接");
+            return gatt.connect();
+        } else {
+            logger.w("重新连接，当前BluetoothGatt为null.");
+        }
+        return false;
     }
 
     /**
@@ -166,21 +169,17 @@ public class SimpleGattClient implements BluetoothGattClient {
         return mGatt;
     }
 
+    @Override
+    public void setBluetoothGatt(BluetoothGatt bluetoothGatt) {
+        this.mGatt = bluetoothGatt;
+    }
+
     /**
      * 断开连接
      */
     @Override
     public void disconnect() {
-        if (mGatt != null) {
-            if (mDevice != null) {
-                logger.i("断开连接，", mDevice.getName(), ": ", mDevice.getAddress());
-            }
-            mDelegate.setAutoConnect(false);
-            mGatt.disconnect();
-            mDevice = null;
-            mService = null;
-            mCharacteristic = null;
-        }
+        disconnect(false);
     }
 
     /**
@@ -190,10 +189,23 @@ public class SimpleGattClient implements BluetoothGattClient {
      */
     @Override
     public void disconnect(boolean close) {
-        if (close) {
-            close();
-        } else {
-            disconnect();
+        final BluetoothGatt gatt = getBluetoothGatt();
+        if (gatt != null) {
+            BluetoothDevice device = gatt.getDevice();
+            if (device != null) {
+                logger.i("断开连接，", device.getName(), ": ", device.getAddress());
+            }
+            mDelegate.setAutoConnect(false);
+            gatt.disconnect();
+
+            if (close) {
+                this.close(gatt, device);
+                mDelegate.onDisconnected(gatt, false);
+            }
+
+            this.setDefaultServiceAndCharacteristic(null, null);
+            // 将BluetoothGatt置为NULL
+            this.setBluetoothGatt(null);
         }
     }
 
@@ -202,14 +214,18 @@ public class SimpleGattClient implements BluetoothGattClient {
      */
     @Override
     public void close() {
-        if (mGatt != null) {
-            mDevice = mDevice == null ? mGatt.getDevice() : mDevice;
-            if (mDevice != null) {
-                logger.i("断开连接并关闭通道，", mDevice.getName(), ": ", mDevice.getAddress());
+        final BluetoothGatt gatt = getBluetoothGatt();
+        final BluetoothDevice device = gatt != null ? gatt.getDevice() : null;
+        this.close(gatt, device);
+    }
+
+    private void close(final BluetoothGatt gatt, BluetoothDevice device) {
+        if (gatt != null) {
+            if (device != null) {
+                logger.i("断开连接并关闭通道，", device.getName(), ": ", device.getAddress());
             }
-            disconnect();
-            mGatt.close();
-            mGatt = null;
+            mDelegate.setAutoConnect(false);
+            gatt.close();
         }
     }
 
@@ -248,39 +264,44 @@ public class SimpleGattClient implements BluetoothGattClient {
     }
 
     @Override
-    public void setGattService(BluetoothGattService service) {
-        this.mService = service;
+    public void setReadGattService(BluetoothGattService service) {
+        this.mReadService = service;
     }
 
     @Override
-    public BluetoothGattService getGattService() {
-        return mService;
+    public BluetoothGattService getReadGattService() {
+        return mReadService;
     }
 
     @Override
-    public void setGattCharacteristic(BluetoothGattCharacteristic characteristic) {
-        this.mCharacteristic = characteristic;
+    public void setReadGattCharacteristic(BluetoothGattCharacteristic characteristic) {
+        this.mReadCharacteristic = characteristic;
     }
 
     @Override
-    public BluetoothGattCharacteristic getGattCharacteristic() {
-        return mCharacteristic;
+    public BluetoothGattCharacteristic getReadGattCharacteristic() {
+        return mReadCharacteristic;
     }
 
     @Override
-    public boolean write(byte[] value) {
-        return writeCharacteristic(mCharacteristic, value);
+    public void setWriteGattService(BluetoothGattService service) {
+        this.mWriteService = service;
     }
 
     @Override
-    public boolean write(String hex) {
-        if (hex != null && hex.trim().length() > 0) {
-            byte[] value = BluetoothTool.hexToByte(hex);
-            return writeCharacteristic(mCharacteristic, value);
-        }
-        return false;
+    public BluetoothGattService getWriteGattService() {
+        return mWriteService;
     }
 
+    @Override
+    public void setWriteGattCharacteristic(BluetoothGattCharacteristic characteristic) {
+        this.mWriteCharacteristic = characteristic;
+    }
+
+    @Override
+    public BluetoothGattCharacteristic getWriteGattCharacteristic() {
+        return mWriteCharacteristic;
+    }
 
     private static String getDeviceAddress(BluetoothDevice device) {
         return device != null ? device.getAddress() : "";
@@ -296,7 +317,7 @@ public class SimpleGattClient implements BluetoothGattClient {
      */
     @Override
     public BluetoothGattService getService(UUID serviceUUID) {
-        return BluetoothTool.getService(mGatt, serviceUUID);
+        return BluetoothTool.getService(getBluetoothGatt(), serviceUUID);
     }
 
     /**
@@ -308,7 +329,7 @@ public class SimpleGattClient implements BluetoothGattClient {
      */
     @Override
     public BluetoothGattCharacteristic getCharacteristic(UUID serviceUUID, UUID characteristicUUID) {
-        return BluetoothTool.getCharacteristic(mGatt, serviceUUID, characteristicUUID);
+        return BluetoothTool.getCharacteristic(getBluetoothGatt(), serviceUUID, characteristicUUID);
     }
 
     /**
@@ -346,15 +367,15 @@ public class SimpleGattClient implements BluetoothGattClient {
      */
     @Override
     public boolean readCharacteristic(BluetoothGattCharacteristic characteristic, boolean enableNotification) {
-        if (!nonNull(characteristic, mGatt)) {
+        if (!isNonNull(characteristic, getBluetoothGatt())) {
             return false;
         }
 
         if (enableNotification) {
             logger.i("readCharacteristic ==>: 设置特征提醒: ", characteristic.getUuid());
-            mGatt.setCharacteristicNotification(characteristic, true);
+            getBluetoothGatt().setCharacteristicNotification(characteristic, true);
         }
-        return mGatt.readCharacteristic(characteristic);
+        return getBluetoothGatt().readCharacteristic(characteristic);
     }
 
     /**
@@ -362,9 +383,9 @@ public class SimpleGattClient implements BluetoothGattClient {
      */
     @Override
     public boolean writeCharacteristic(BluetoothGattCharacteristic characteristic, byte[] value) {
-        return nonNull(characteristic, mGatt)
+        return isNonNull(characteristic, getBluetoothGatt())
                 && characteristic.setValue(value)
-                && mGatt.writeCharacteristic(characteristic);
+                && getBluetoothGatt().writeCharacteristic(characteristic);
     }
 
     @Override
@@ -393,7 +414,7 @@ public class SimpleGattClient implements BluetoothGattClient {
      */
     @Override
     public boolean setCharacteristicNotification(BluetoothGattCharacteristic characteristic, boolean enabled) {
-        return mGatt != null && mGatt.setCharacteristicNotification(characteristic, enabled);
+        return getBluetoothGatt() != null && getBluetoothGatt().setCharacteristicNotification(characteristic, enabled);
     }
 
     /**
@@ -429,7 +450,7 @@ public class SimpleGattClient implements BluetoothGattClient {
     }
 
 
-    private static boolean nonNull(Object... objects) {
+    private static boolean isNonNull(Object... objects) {
         for (Object o : objects) {
             if (o == null) {
                 return false;

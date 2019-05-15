@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical">
+
+
+    <Button
+        android:id="@+id/btn_connect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="连接设备" />
+
+
+    <Button
+        android:id="@+id/btn_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="close" />
+
+    <Button
+        android:id="@+id/btn_reconnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="重连" />
+
+    <Button
+        android:id="@+id/btn_disconnect1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="断开连接-false" />
+
+    <Button
+        android:id="@+id/btn_disconnect2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="断开连接-true" />
+
+</LinearLayout>

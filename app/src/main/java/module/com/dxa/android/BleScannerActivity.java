@@ -6,33 +6,44 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
+import com.benefit.base.ui.ActivityPresenter;
+import com.benefit.base.ui.BenefitActivity;
 import com.dxa.android.ble.BleScanner;
-import com.dxa.android.ui.ActivityPresenter;
-import com.dxa.android.ui.SuperActivity;
 import com.jude.easyrecyclerview.EasyRecyclerView;
 import com.jude.easyrecyclerview.adapter.BaseViewHolder;
 import com.jude.easyrecyclerview.adapter.RecyclerArrayAdapter;
 import com.jude.easyrecyclerview.decoration.DividerDecoration;
+import com.yanzhenjie.permission.AndPermission;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import pub.devrel.easypermissions.EasyPermissions;
 
-public class BleScannerActivity extends SuperActivity {
+public class BleScannerActivity extends BenefitActivity {
+
+    @Nullable
+    public static BluetoothDevice getDevice(Intent data) {
+        if (data != null) {
+            return data.getParcelableExtra(DEVICE);
+        }
+        return null;
+    }
+
     public static final String DEVICE_NAME = "bleDeviceName";
     public static final String DEVICE_ADDRESS = "bleDeviceAddress";
+    public static final String DEVICE = "bleDevice";
 
     @BindView(R.id.easy_recycler_view)
     EasyRecyclerView recyclerView;
@@ -41,8 +52,6 @@ public class BleScannerActivity extends SuperActivity {
 
     private BleScanner scanner;
     private final Set<BluetoothDevice> deviceSet = new HashSet<>();
-
-    private AlertDialog requestPermissionDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +93,7 @@ public class BleScannerActivity extends SuperActivity {
 
             BluetoothDevice device = adapter.getItem(position);
             Intent intent = new Intent();
+            intent.putExtra(DEVICE, device);
             intent.putExtra(DEVICE_NAME, device.getName());
             intent.putExtra(DEVICE_ADDRESS, device.getAddress());
             setResult(RESULT_OK, intent);
@@ -93,55 +103,40 @@ public class BleScannerActivity extends SuperActivity {
         scanner = new BleScanner();
         scanner.setBLeScanListener(onScanListener);
 
-        if (!hasLocationAndBluetoothPermissions()) {
-            // 做的比较简陋，需要更完善的权限请求逻辑
-            if (requestPermissionDialog == null) {
-                requestPermissionDialog = new AlertDialog.Builder(this)
-                        .setCancelable(false)
-                        .setMessage("蓝牙扫描需要权限，请允许，谢谢!")
-                        .setNegativeButton("不给", (dialog, which) -> {
-                            dialog.dismiss();
-                            getActivity().finish();
-                        })
-                        .setPositiveButton("朕,准了", (dialog, which) -> {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                requestPermissions(new String[]{
-                                        Manifest.permission.BLUETOOTH,
-                                        Manifest.permission.BLUETOOTH_ADMIN,
-                                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                                        Manifest.permission.ACCESS_FINE_LOCATION
-                                }, 666);
-                            }
-                        })
-                        .create();
-            }
-            requestPermissionDialog.show();
-        }
+        requestBlePermissions();
 
 
+    }
+
+    private void requestBlePermissions() {
+        AndPermission.with(this)
+                .runtime()
+                .permission(Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.BLUETOOTH,
+                        Manifest.permission.BLUETOOTH_ADMIN)
+                .onGranted(data -> scanner.startScan())
+                .onDenied(data -> showAlertDialog())
+                .start();
+    }
+
+    private void showAlertDialog() {
+        new AlertDialog.Builder(this)
+                .setCancelable(false)
+                .setMessage("蓝牙扫描需要权限，请允许，谢谢!")
+                .setNegativeButton("不给", (dialog, which) -> {
+                    dialog.dismiss();
+                    getActivity().finish();
+                })
+                .setPositiveButton("朕,准了", (dialog, which) -> requestBlePermissions())
+                .create()
+                .show();
     }
 
     @Override
     protected void onDestroy() {
         scanner.stopScan();
         super.onDestroy();
-        if (requestPermissionDialog != null) {
-            requestPermissionDialog.dismiss();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        // Forward results to EasyPermissions
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
-    }
-
-
-    @Nullable
-    @Override
-    protected ActivityPresenter buildPresenter() {
-        return null;
     }
 
 
@@ -197,20 +192,6 @@ public class BleScannerActivity extends SuperActivity {
             e.printStackTrace();
         }
     };
-
-
-    /***********************************************************************************/
-
-    private static final String[] LOCATION_AND_BLUETOOTH = {
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.BLUETOOTH,
-            Manifest.permission.BLUETOOTH_ADMIN
-    };
-
-    private boolean hasLocationAndBluetoothPermissions() {
-        return EasyPermissions.hasPermissions(this, LOCATION_AND_BLUETOOTH);
-    }
 
 
     static class BleDeviceViewHolder extends BaseViewHolder<BluetoothDevice> {

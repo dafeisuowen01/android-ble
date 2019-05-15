@@ -16,7 +16,9 @@ public interface BluetoothGattClient extends GattOperator {
     /**
      * 获取 BluetoothAdapter
      */
-    BluetoothAdapter getAdapter();
+    default BluetoothAdapter getAdapter() {
+        return BluetoothAdapter.getDefaultAdapter();
+    }
 
     /**
      * 蓝牙是否可用
@@ -48,14 +50,19 @@ public interface BluetoothGattClient extends GattOperator {
      * @param autoConnect 是否自动重连，设备休眠或超过距离断开后，当设备可以重新连接时，系统会自动重新连接
      * @return 是否连接
      */
-    boolean connect(Context context, BluetoothDevice device, boolean autoConnect);
+    default boolean connect(Context context, BluetoothDevice device, boolean autoConnect) {
+        return connect(context, device.getAddress(), autoConnect);
+    }
 
     /**
      * 重新连接，如果之前连接过设备
      *
      * @return 是否重新连接(没有连接过设备调用会返回false)
      */
-    boolean reconnect();
+    default boolean reconnect() {
+        BluetoothGatt gatt = getBluetoothGatt();
+        return gatt != null && gatt.connect();
+    }
 
     /**
      * 获取BluetoothGatt对象
@@ -63,6 +70,13 @@ public interface BluetoothGattClient extends GattOperator {
      * @return 返回 BluetoothGatt 或 null
      */
     BluetoothGatt getBluetoothGatt();
+
+    /**
+     * 设置BluetoothGatt对象
+     *
+     * @param bluetoothGatt BluetoothGatt
+     */
+    void setBluetoothGatt(BluetoothGatt bluetoothGatt);
 
     /**
      * 断开连接
@@ -115,36 +129,109 @@ public interface BluetoothGattClient extends GattOperator {
      *
      * @param service BluetoothGattService 对象
      */
-    void setGattService(BluetoothGattService service);
+    void setReadGattService(BluetoothGattService service);
 
     /**
      * 获取默认的 BluetoothGattService
      */
-    BluetoothGattService getGattService();
+    BluetoothGattService getReadGattService();
+
+    /**
+     * 设置读的 BluetoothGattCharacteristic
+     *
+     * @param characteristic BluetoothGattCharacteristic 对象
+     */
+    void setReadGattCharacteristic(BluetoothGattCharacteristic characteristic);
+
+    /**
+     * 获取读的 BluetoothGattCharacteristic
+     */
+    BluetoothGattCharacteristic getReadGattCharacteristic();
+
+    /**
+     * 设置写的 BluetoothGattService
+     *
+     * @param service BluetoothGattService 对象
+     */
+    void setWriteGattService(BluetoothGattService service);
+
+    /**
+     * 获取写的 BluetoothGattService
+     */
+    BluetoothGattService getWriteGattService();
 
     /**
      * 设置默认的 BluetoothGattCharacteristic
      *
      * @param characteristic BluetoothGattCharacteristic 对象
      */
-    void setGattCharacteristic(BluetoothGattCharacteristic characteristic);
+    void setWriteGattCharacteristic(BluetoothGattCharacteristic characteristic);
 
     /**
-     * 获取默认的 BluetoothGattCharacteristic
+     * 获取写的 BluetoothGattCharacteristic
      */
-    BluetoothGattCharacteristic getGattCharacteristic();
+    BluetoothGattCharacteristic getWriteGattCharacteristic();
+
+    /**
+     * 设置读的 BluetoothGattService 和 BluetoothGattCharacteristic
+     *
+     * @param service        BluetoothGattService
+     * @param characteristic BluetoothGattCharacteristic
+     */
+    default void setReadServiceAndCharacteristic(BluetoothGattService service, BluetoothGattCharacteristic characteristic) {
+        // read
+        setReadGattService(service);
+        setReadGattCharacteristic(characteristic);
+    }
+
+    /**
+     * 设置写的 BluetoothGattService 和 BluetoothGattCharacteristic
+     *
+     * @param service        BluetoothGattService
+     * @param characteristic BluetoothGattCharacteristic
+     */
+    default void setWriteServiceAndCharacteristic(BluetoothGattService service, BluetoothGattCharacteristic characteristic) {
+        // write
+        setWriteGattService(service);
+        setWriteGattCharacteristic(characteristic);
+    }
+
+    /**
+     * 设置读和写的 BluetoothGattService 和 BluetoothGattCharacteristic
+     *
+     * @param service        BluetoothGattService
+     * @param characteristic BluetoothGattCharacteristic
+     */
+    default void setDefaultServiceAndCharacteristic(BluetoothGattService service, BluetoothGattCharacteristic characteristic) {
+        // read
+        setReadGattService(service);
+        setReadGattCharacteristic(characteristic);
+        // write
+        setWriteGattService(service);
+        setWriteGattCharacteristic(characteristic);
+    }
 
     /**
      * 往默认的 BluetoothGattCharacteristic 中写入数据
      *
      * @param value 数据
      */
-    boolean write(byte[] value);
+    default boolean write(byte[] value) {
+        if (value != null && value.length > 0) {
+            return writeCharacteristic(getWriteGattCharacteristic(), value);
+        }
+        return false;
+    }
 
     /**
      * 往默认的 BluetoothGattCharacteristic 中写入数据
      *
      * @param hex 16进制数据
      */
-    boolean write(String hex);
+    default boolean write(String hex) {
+        if (hex != null && hex.trim().length() > 0) {
+            return writeCharacteristic(getWriteGattCharacteristic(), BluetoothTool.hexToByte(hex));
+        }
+        return false;
+    }
 }

@@ -80,11 +80,11 @@ public class GattChangedListenerDelegate implements OnGattChangedListener {
     }
 
     @Override
-    public void onDisconnected(BluetoothGatt gatt) {
+    public void onDisconnected(BluetoothGatt gatt, boolean auto) {
         // 如果还自动重连，则会
         this.state = autoConnect ? AUTO_DISCONNECTED : DISCONNECTED;
         if (changedListener != null) {
-            this.changedListener.onDisconnected(gatt);
+            this.changedListener.onDisconnected(gatt, auto);
         }
     }
 

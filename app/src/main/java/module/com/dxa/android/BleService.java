@@ -12,12 +12,12 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 
+import com.benefit.base.log.DLogger;
+import com.benefit.base.log.LogLevel;
 import com.dxa.android.ble.BluetoothGattClient;
 import com.dxa.android.ble.ConnectState;
 import com.dxa.android.ble.OnGattChangedListener;
 import com.dxa.android.ble.impl.SimpleGattClient;
-import com.dxa.android.logger.DLogger;
-import com.dxa.android.logger.LogLevel;
 
 import java.util.UUID;
 
@@ -81,6 +81,11 @@ public class BleService extends Service {
         }
 
         @Override
+        public void setBluetoothGatt(BluetoothGatt bluetoothGatt) {
+            client.setBluetoothGatt(bluetoothGatt);
+        }
+
+        @Override
         public void disconnect() {
             client.disconnect();
         }
@@ -121,23 +126,43 @@ public class BleService extends Service {
         }
 
         @Override
-        public void setGattService(BluetoothGattService service) {
-            client.setGattService(service);
+        public void setReadGattService(BluetoothGattService service) {
+            client.setReadGattService(service);
         }
 
         @Override
-        public BluetoothGattService getGattService() {
-            return client.getGattService();
+        public BluetoothGattService getReadGattService() {
+            return client.getReadGattService();
         }
 
         @Override
-        public void setGattCharacteristic(BluetoothGattCharacteristic characteristic) {
-            client.setGattCharacteristic(characteristic);
+        public void setReadGattCharacteristic(BluetoothGattCharacteristic characteristic) {
+            client.setReadGattCharacteristic(characteristic);
         }
 
         @Override
-        public BluetoothGattCharacteristic getGattCharacteristic() {
-            return client.getGattCharacteristic();
+        public BluetoothGattCharacteristic getReadGattCharacteristic() {
+            return client.getReadGattCharacteristic();
+        }
+
+        @Override
+        public void setWriteGattService(BluetoothGattService service) {
+            client.setWriteGattService(service);
+        }
+
+        @Override
+        public BluetoothGattService getWriteGattService() {
+            return client.getWriteGattService();
+        }
+
+        @Override
+        public void setWriteGattCharacteristic(BluetoothGattCharacteristic characteristic) {
+            client.setWriteGattCharacteristic(characteristic);
+        }
+
+        @Override
+        public BluetoothGattCharacteristic getWriteGattCharacteristic() {
+            return client.getWriteGattCharacteristic();
         }
 
         @Override

@@ -13,7 +13,8 @@ public interface OnGattChangedListener {
     /**
      * 连接设备成功
      */
-    void onConnected(BluetoothGatt gatt);
+    default void onConnected(BluetoothGatt gatt) {
+    }
 
     /**
      * Callback invoked when the list of remote services, characteristics and descriptors
@@ -21,12 +22,18 @@ public interface OnGattChangedListener {
      *
      * @param gatt GATT client invoked {@link BluetoothGatt#discoverServices}
      */
-    boolean onServiceDiscover(BluetoothGatt gatt);
+    default boolean onServiceDiscover(BluetoothGatt gatt) {
+        return false;
+    }
 
     /**
      * 设备断开
+     *
+     * @param gatt 断开的 BluetoothGatt
+     * @param auto 是否是系统自动触发，如果为false，则是用户触发
      */
-    void onDisconnected(BluetoothGatt gatt);
+    default void onDisconnected(BluetoothGatt gatt, boolean auto) {
+    }
 
     /**
      * Callback triggered as result of {@link BluetoothGatt#readPhy}
@@ -37,7 +44,8 @@ public interface OnGattChangedListener {
      * @param rxPhy the receiver PHY in use. One of {@link BluetoothDevice#PHY_LE_1M},
      *              {@link BluetoothDevice#PHY_LE_2M}, and {@link BluetoothDevice#PHY_LE_CODED}.
      */
-    void onPhyRead(BluetoothGatt gatt, int txPhy, int rxPhy);
+    default void onPhyRead(BluetoothGatt gatt, int txPhy, int rxPhy) {
+    }
 
     /**
      * Callback triggered as result of {@link BluetoothGatt#setPreferredPhy}, or as a result of
@@ -49,8 +57,8 @@ public interface OnGattChangedListener {
      * @param rxPhy the receiver PHY in use. One of {@link BluetoothDevice#PHY_LE_1M},
      *              {@link BluetoothDevice#PHY_LE_2M}, and {@link BluetoothDevice#PHY_LE_CODED}.
      */
-    void onPhyUpdate(BluetoothGatt gatt, int txPhy, int rxPhy);
-
+    default void onPhyUpdate(BluetoothGatt gatt, int txPhy, int rxPhy) {
+    }
 
 
     /**
@@ -61,7 +69,8 @@ public interface OnGattChangedListener {
      * @param status         {@link BluetoothGatt#GATT_SUCCESS} if the read operation
      *                       was completed successfully.
      */
-    void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status);
+    default void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+    }
 
     /**
      * Callback indicating the result of a characteristic write operation.
@@ -75,7 +84,8 @@ public interface OnGattChangedListener {
      * @param gatt           GATT client invoked {@link BluetoothGatt#writeCharacteristic}
      * @param characteristic Characteristic that was written to the associated remote device.
      */
-    void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic);
+    default void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+    }
 
     /**
      * Callback triggered as a result of a remote characteristic notification.
@@ -85,7 +95,8 @@ public interface OnGattChangedListener {
      * @param characteristic Characteristic that has been updated as a result
      *                       of a remote notification event.
      */
-    void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic);
+    default void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+    }
 
     /**
      * Callback reporting the result of a descriptor read operation.
@@ -93,7 +104,8 @@ public interface OnGattChangedListener {
      * @param gatt       GATT client invoked {@link BluetoothGatt#readDescriptor}
      * @param descriptor Descriptor that was read from the associated remote device.
      */
-    void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor);
+    default void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor) {
+    }
 
     /**
      * Callback indicating the result of a descriptor write operation.
@@ -101,14 +113,16 @@ public interface OnGattChangedListener {
      * @param gatt       GATT client invoked {@link BluetoothGatt#writeDescriptor}
      * @param descriptor Descriptor that was writte to the associated remote device.
      */
-    void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor);
+    default void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor) {
+    }
 
     /**
      * Callback invoked when a reliable write transaction has been completed.
      *
      * @param gatt GATT client invoked {@link BluetoothGatt#executeReliableWrite}
      */
-    void onReliableWriteCompleted(BluetoothGatt gatt);
+    default void onReliableWriteCompleted(BluetoothGatt gatt) {
+    }
 
     /**
      * Callback reporting the RSSI for a remote device connection.
@@ -119,7 +133,8 @@ public interface OnGattChangedListener {
      * @param gatt GATT client invoked {@link BluetoothGatt#readRemoteRssi}
      * @param rssi The RSSI value for the remote device
      */
-    void onReadRemoteRssi(BluetoothGatt gatt, int rssi);
+    default void onReadRemoteRssi(BluetoothGatt gatt, int rssi) {
+    }
 
     /**
      * Callback indicating the MTU for a given device connection has changed.
@@ -130,6 +145,7 @@ public interface OnGattChangedListener {
      * @param gatt GATT client invoked {@link BluetoothGatt#requestMtu}
      * @param mtu  The new MTU size
      */
-    void onMtuChanged(BluetoothGatt gatt, int mtu);
+    default void onMtuChanged(BluetoothGatt gatt, int mtu) {
+    }
 
 }

@@ -73,7 +73,7 @@ public final class GattCallback extends BluetoothGattCallback {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             getListener().onPhyUpdate(gatt, txPhy, rxPhy);
         } else {
-            logger.w("onPhyUpdate received: ", status);
+            logger.d("onPhyUpdate received: ", status);
         }
     }
 
@@ -93,7 +93,7 @@ public final class GattCallback extends BluetoothGattCallback {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             getListener().onPhyRead(gatt, txPhy, rxPhy);
         } else {
-            logger.w("onPhyRead received: ", status);
+            logger.d("onPhyRead received: ", status);
         }
     }
 
@@ -111,18 +111,18 @@ public final class GattCallback extends BluetoothGattCallback {
     @Override
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
         if (newState == BluetoothProfile.STATE_CONNECTED) {//2
-            logger.i("Connected to GATT server.");
+            logger.d("Connected to GATT server.");
             connected = true;
             getListener().onConnected(gatt);
             // Attempts to discover services after successful connection.
             boolean discoverServices = gatt.discoverServices();
-            logger.i("Attempting to start service discovery: ", discoverServices);
+            logger.d("Attempting to start service discovery: ", discoverServices);
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {//0
-            logger.i("Disconnected from GATT server.");
+            logger.d("Disconnected from GATT server.");
             connected = false;
-            getListener().onDisconnected(gatt);
+            getListener().onDisconnected(gatt, true);
         } else {
-            logger.i("onConnectionStateChange status: ", status, ", newState: ", newState);
+            logger.d("onConnectionStateChange status: ", status, ", newState: ", newState);
         }
     }
 
@@ -158,7 +158,7 @@ public final class GattCallback extends BluetoothGattCallback {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             getListener().onCharacteristicRead(gatt, characteristic, status);
         } else {
-            logger.i("onCharacteristicRead receive: ", status);
+            logger.d("onCharacteristicRead receive: ", status);
         }
     }
 
@@ -181,7 +181,7 @@ public final class GattCallback extends BluetoothGattCallback {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             getListener().onCharacteristicWrite(gatt, characteristic);
         } else {
-            logger.i("onCharacteristicWrite receive: ", status);
+            logger.d("onCharacteristicWrite receive: ", status);
         }
     }
 
@@ -210,7 +210,7 @@ public final class GattCallback extends BluetoothGattCallback {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             getListener().onDescriptorRead(gatt, descriptor);
         } else {
-            logger.i("onDescriptorRead receive: ", status);
+            logger.d("onDescriptorRead receive: ", status);
         }
     }
 
@@ -228,7 +228,7 @@ public final class GattCallback extends BluetoothGattCallback {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             getListener().onDescriptorWrite(gatt, descriptor);
         } else {
-            logger.i("onDescriptorWrite receive: ", status);
+            logger.d("onDescriptorWrite receive: ", status);
         }
     }
 
@@ -243,7 +243,7 @@ public final class GattCallback extends BluetoothGattCallback {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             getListener().onReliableWriteCompleted(gatt);
         } else {
-            logger.i("onReliableWriteCompleted receive: ", status);
+            logger.d("onReliableWriteCompleted receive: ", status);
         }
     }
 
@@ -262,7 +262,7 @@ public final class GattCallback extends BluetoothGattCallback {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             getListener().onReadRemoteRssi(gatt, rssi);
         } else {
-            logger.i("onReadRemoteRssi receive: ", status);
+            logger.d("onReadRemoteRssi receive: ", status);
         }
     }
 
@@ -282,7 +282,7 @@ public final class GattCallback extends BluetoothGattCallback {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             getListener().onMtuChanged(gatt, mtu);
         } else {
-            logger.i("onMtuChanged receive: ", status);
+            logger.d("onMtuChanged receive: ", status);
         }
     }
 

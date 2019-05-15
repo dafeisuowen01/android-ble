@@ -5,29 +5,30 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
+
+import com.benefit.base.log.DLogger;
+import com.benefit.base.ui.BenefitActivity;
 import com.dxa.android.ble.BluetoothGattClient;
 import com.dxa.android.ble.BluetoothTool;
 import com.dxa.android.ble.OnGattChangedListener;
 import com.dxa.android.ble.impl.SimpleGattChangedListener;
 import com.dxa.android.ble.impl.SimpleGattClient;
-import com.dxa.android.logger.DLogger;
-import com.dxa.android.ui.ActivityPresenter;
-import com.dxa.android.ui.SuperActivity;
 
 import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class ThermometerActivity extends SuperActivity {
+public class ThermometerActivity extends BenefitActivity {
     static {
         DLogger.setDebug(true);
     }
@@ -92,12 +93,6 @@ public class ThermometerActivity extends SuperActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Nullable
-    @Override
-    protected ActivityPresenter buildPresenter() {
-        return null;
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -118,7 +113,7 @@ public class ThermometerActivity extends SuperActivity {
             if (client.isDiscoverService()){
                 // 发送指令
                 BluetoothGattCharacteristic characteristic = client.getCharacteristic(UUID_SERVICE, UUID_CHARACTERISTIC_WRITE);
-                client.writeCharacteristic(characteristic, BluetoothTool.hexToBin("FFFE04872261"));
+                client.writeCharacteristic(characteristic, BluetoothTool.hexToByte("FFFE04872261"));
                 logger.d("发送指令");
             }
             getSyncHandler().removeCallbacks(cmdTask);
@@ -148,8 +143,8 @@ public class ThermometerActivity extends SuperActivity {
                 // 设置数据改变时提醒
                 gatt.setCharacteristicNotification(gattCharacteristic, true);
 
-                client.setGattService(gattService);
-                client.setGattCharacteristic(gattCharacteristic);
+                client.setReadGattService(gattService);
+                client.setReadGattCharacteristic(gattCharacteristic);
                 // 发送指令
                 getSyncHandler().post(cmdTask);
 
@@ -181,7 +176,7 @@ public class ThermometerActivity extends SuperActivity {
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
             byte[] value = characteristic.getValue();
-            logger.i("onCharacteristicChanged @ 数据发生改变: " + BluetoothTool.binToHex(value));
+            logger.i("onCharacteristicChanged @ 数据发生改变: " + BluetoothTool.byteToHex(value));
 
             if (value != null && (value[0] == ((byte) 0xAA))) {
                 float thermometer = (Math.round(BluetoothTool.byteToInt(value[2], value[3]) / 10.0f) / 10.0f);
@@ -200,8 +195,13 @@ public class ThermometerActivity extends SuperActivity {
         }
 
         @Override
-        public void onDisconnected(BluetoothGatt gatt) {
+        public void onDisconnected(BluetoothGatt gatt, boolean auto) {
             logger.i("连接断开");
         }
     };
+
+    @Override
+    public Resources getResources() {
+        return getContext().getResources();
+    }
 }

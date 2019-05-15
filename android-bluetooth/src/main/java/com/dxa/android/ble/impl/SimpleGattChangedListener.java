@@ -19,7 +19,6 @@ public class SimpleGattChangedListener implements OnGattChangedListener {
      */
     @Override
     public void onConnected(BluetoothGatt gatt) {
-
     }
 
     /**
@@ -39,8 +38,7 @@ public class SimpleGattChangedListener implements OnGattChangedListener {
      * @param gatt
      */
     @Override
-    public void onDisconnected(BluetoothGatt gatt) {
-
+    public void onDisconnected(BluetoothGatt gatt, boolean auto) {
     }
 
     /**
